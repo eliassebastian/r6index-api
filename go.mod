@@ -2,7 +2,10 @@ module github.com/eliassebastian/r6index-api
 
 go 1.19
 
-require github.com/cloudwego/hertz v0.4.2
+require (
+	github.com/cloudwego/hertz v0.4.2
+	github.com/rabbitmq/amqp091-go v1.5.0
+)
 
 require (
 	github.com/bytedance/go-tagexpr/v2 v2.9.2 // indirect
@@ -16,7 +19,6 @@ require (
 	github.com/henrylee2cn/goutil v0.0.0-20210127050712-89660552f6f8 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
 	github.com/nyaruka/phonenumbers v1.0.55 // indirect
-	github.com/rabbitmq/amqp091-go v1.5.0 // indirect
 	github.com/tidwall/gjson v1.13.0 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect
