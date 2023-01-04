@@ -11,10 +11,13 @@ services:
     restart: unless-stopped
 
   rabbitmq:
+    hostname: rabbit
     container_name: rabbitmq
     image: arm64v8/rabbitmq:3.11.5-management
     ports:
       - 5672:5672
       - 15672:15672
+    volumes:
+      - ./data:/var/lib/rabbitmq/mnesia/
     
 
