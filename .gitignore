@@ -19,3 +19,6 @@
 
 #cert file
 cert/
+
+# env files
+*.env
