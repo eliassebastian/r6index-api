@@ -42,7 +42,7 @@ func New(auth *auth.AuthStore) (*RabbitConsumer, error) {
 
 	q, err := ch.QueueDeclare(
 		"",    // name
-		true,  // durable
+		false, // durable
 		false, // delete when unused
 		false, // exclusive
 		false, // no-wait
@@ -74,6 +74,8 @@ func New(auth *auth.AuthStore) (*RabbitConsumer, error) {
 }
 
 func (r *RabbitConsumer) Consume(ctx context.Context) {
+	log.Println("RabbitMQ Consumer Running")
+
 	msgs, err := r.channel.Consume(
 		r.queue.Name, // queue
 		"",           // consumer
@@ -94,6 +96,7 @@ func (r *RabbitConsumer) Consume(ctx context.Context) {
 			log.Println("Exiting RabbitMQ Loop")
 			return
 		case msg := <-msgs:
+			log.Println("New Message")
 			err := r.auth.Write(msg.Body)
 			if err != nil {
 				log.Println("could not write to session cache")
@@ -103,6 +106,7 @@ func (r *RabbitConsumer) Consume(ctx context.Context) {
 }
 
 func (r *RabbitConsumer) Close() {
+	log.Println("closing rabbitmq connection")
 	r.channel.Close()
 	r.connection.Close()
 }
