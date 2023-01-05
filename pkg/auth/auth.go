@@ -3,6 +3,7 @@ package auth
 import (
 	"bytes"
 	"encoding/json"
+	"log"
 	"sync"
 )
 
@@ -44,6 +45,7 @@ func (as *AuthStore) Write(b []byte) error {
 		return err
 	}
 
+	log.Println(packet)
 	as.UbisoftSession = packet
 	return nil
 }
