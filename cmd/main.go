@@ -56,6 +56,14 @@ func main() {
 		return
 	}
 
+	sc := &serverConfig{
+		Authentication: auth,
+		Client:         c,
+		Rabbit:         rabbit,
+	}
+
+	routes(h, sc)
+
 	ctx, stop := signal.NotifyContext(context.Background(),
 		os.Interrupt,
 		syscall.SIGTERM,
