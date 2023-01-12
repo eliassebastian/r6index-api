@@ -41,11 +41,17 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 	output := &models.Player{}
 	//fetch ubisoft session
 	us := ic.auth.Read()
-	err := ubisoft.GetPlayerProfile(ctx, *ic.client, us, output, name, uuid, platform)
+	profile, err := ubisoft.GetPlayerProfile(ctx, *ic.client, us, name, uuid, platform)
 	if err != nil {
 		c.JSON(consts.StatusBadRequest, responses.Error(startTime, err.Error()))
 		return
 	}
+
+	output.ProfileId = profile.ProfileID
+	output.UserId = profile.UserID
+	output.Nickname = profile.NameOnPlatform
+	output.Platform = profile.PlatformType
+	output.LastUpdate = startTime.UTC()
 
 	c.JSON(consts.StatusOK, responses.Success(startTime, output))
 
