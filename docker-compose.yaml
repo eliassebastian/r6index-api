@@ -19,5 +19,19 @@ services:
       - 15672:15672
     volumes:
       - /var/local/rabbitmq:/var/lib/rabbitmq/mnesia/
+  
+  redis:
+    container_name: redis
+    image: arm64v8/redis
+    environment:
+      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL,CONFIG
+      - ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    
+
     
 
