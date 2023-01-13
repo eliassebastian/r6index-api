@@ -11,7 +11,7 @@ type errorResponse struct {
 
 func Error(start time.Time, message string) errorResponse {
 	return errorResponse{
-		Time:    time.Duration(time.Since(start).Seconds()),
+		Time:    time.Duration(time.Since(start).Milliseconds()),
 		Message: message,
 	}
 }
@@ -26,7 +26,7 @@ func Success(start time.Time, data interface{}) *successResponse {
 
 	return &successResponse{
 		Status:   "success",
-		Duration: time.Duration(time.Since(start).Seconds()),
+		Duration: time.Duration(time.Since(start).Milliseconds()),
 		Data:     data,
 	}
 }
