@@ -6,6 +6,6 @@ package ubisoft
 // }
 
 type XpAndLevel struct {
-	Level int `json:"level"`
-	Xp    int `json:"xp"`
+	Level int16 `json:"level"`
+	Xp    int32 `json:"xp"`
 }
