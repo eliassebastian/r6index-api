@@ -14,6 +14,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/network/standard"
 	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/eliassebastian/r6index-api/pkg/auth"
+	"github.com/eliassebastian/r6index-api/pkg/cache"
 	"github.com/eliassebastian/r6index-api/pkg/rabbitmq"
 )
 
@@ -21,6 +22,7 @@ type serverConfig struct {
 	Authentication *auth.AuthStore
 	Rabbit         *rabbitmq.RabbitConsumer
 	Client         *client.Client
+	Cache          *cache.CacheStore
 }
 
 func main() {
@@ -50,9 +52,21 @@ func main() {
 		return resp.StatusCode() != 200 || err != nil
 	})
 
+	ctx, stop := signal.NotifyContext(context.Background(),
+		os.Interrupt,
+		syscall.SIGTERM,
+		syscall.SIGQUIT)
+
 	auth := auth.New()
+	redis, err := cache.New(ctx)
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+
 	rabbit, err := rabbitmq.New(auth)
 	if err != nil {
+		log.Println(err.Error())
 		return
 	}
 
@@ -60,22 +74,16 @@ func main() {
 		Authentication: auth,
 		Client:         c,
 		Rabbit:         rabbit,
+		Cache:          redis,
 	}
 
 	routes(h, sc)
 
-	ctx, stop := signal.NotifyContext(context.Background(),
-		os.Interrupt,
-		syscall.SIGTERM,
-		syscall.SIGQUIT)
-
 	// graceful shutdown function
 	h.OnShutdown = append(h.OnShutdown, func(ctx context.Context) {
-		log.Println("Hook 1")
 		stop()
 		rabbit.Close()
 		<-ctx.Done()
-		log.Println("Hook 1 Completed")
 	})
 
 	go rabbit.Consume(ctx)
