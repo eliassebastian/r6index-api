@@ -15,7 +15,6 @@ import (
 //import "fmt"
 
 func GetPlayerProfile(ctx context.Context, client client.Client, auth *auth.UbisoftSession, name, uuid, platform string) (*ubisoft.Profile, error) {
-
 	req := protocol.AcquireRequest()
 	res := protocol.AcquireResponse()
 	defer protocol.ReleaseRequest(req)
@@ -41,4 +40,27 @@ func GetPlayerProfile(ctx context.Context, client client.Client, auth *auth.Ubis
 	}
 
 	return &profile.Profiles[0], nil
+}
+
+func GetXpAndLevel(ctx context.Context, client client.Client, auth *auth.UbisoftSession, uuid string) (*ubisoft.XpAndLevel, error) {
+	req := protocol.AcquireRequest()
+	res := protocol.AcquireResponse()
+	defer protocol.ReleaseRequest(req)
+	defer protocol.ReleaseResponse(res)
+
+	req.SetMethod(consts.MethodGet)
+	req.SetRequestURI(xpUri(uuid))
+	requestHeaders(req, auth, true)
+	err := client.DoRedirects(ctx, req, res, 1)
+	if err != nil {
+		return nil, err
+	}
+
+	var xpLevel ubisoft.XpAndLevel
+	de := json.NewDecoder(res.BodyStream()).Decode(&xpLevel)
+	if de != nil {
+		return nil, errors.New("error decoding response")
+	}
+
+	return &xpLevel, nil
 }
