@@ -98,19 +98,24 @@ func GetRankedOne(ctx context.Context, client client.Client, auth *auth.UbisoftS
 		//log.Println(season)
 		var regions []ubisoft.RankedSeason
 
+		id := season.SeasonID
+
 		for _, region := range season.RegionsPlayerSkillRecords {
 			if len(region.BoardsPlayerSkillRecords) != 0 {
 				regionInfo := region.BoardsPlayerSkillRecords[0].Seasons[0]
 				if regionInfo.Wins+regionInfo.Losses+regionInfo.Abandons != 0 {
 					regions = append(regions, regionInfo)
 				}
+				if id > 17 {
+					break
+				}
 			}
 		}
 
 		if len(regions) != 0 {
 			seasonOut := ubisoft.RankedOutputModel{
-				SeasonID:  season.SeasonID,
-				SeasonTag: seasons[season.SeasonID].Code,
+				SeasonID:  id,
+				SeasonTag: seasons[id].Code,
 				Regions:   regions,
 			}
 			output = append(output, seasonOut)
