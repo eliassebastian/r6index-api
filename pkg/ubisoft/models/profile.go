@@ -5,12 +5,8 @@ type ProfileModel struct {
 }
 
 type Profile struct {
-	//platform specific uuid
-	ProfileID string `json:"profileId"`
-	//user uuid - note: stays the same across different platforms
-	UserID       string `json:"userId"`
-	PlatformType string `json:"platformType"`
-	//platform ID
-	//IDOnPlatform   string `json:"idOnPlatform"`
+	ProfileID      string `json:"profileId"`
+	UserID         string `json:"userId"`
+	PlatformType   string `json:"platformType"`
 	NameOnPlatform string `json:"nameOnPlatform"`
 }
