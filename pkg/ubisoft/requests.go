@@ -90,12 +90,8 @@ func GetRankedOne(ctx context.Context, client client.Client, auth *auth.UbisoftS
 		return nil, errors.New("error decoding response")
 	}
 
-	validSeasons := rankedJson.SeasonsPlayerSkillRecords[5:]
-	//log.Println(validSeasons)
-
 	var output []ubisoft.RankedOutputModel
-	for _, season := range validSeasons {
-		//log.Println(season)
+	for _, season := range rankedJson.SeasonsPlayerSkillRecords {
 		var regions []ubisoft.RankedSeason
 
 		id := season.SeasonID
