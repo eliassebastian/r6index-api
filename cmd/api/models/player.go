@@ -1,6 +1,10 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	ubisoft "github.com/eliassebastian/r6index-api/pkg/ubisoft/models"
+)
 
 type AliasCache struct {
 	Name string
@@ -12,12 +16,13 @@ type Alias struct {
 }
 
 type Player struct {
-	ProfileId  string    `json:"profileId"`
-	UserId     string    `json:"userId"`
-	Platform   string    `json:"platform"`
-	Nickname   string    `json:"nickname"`
-	LastUpdate time.Time `json:"lastUpdate"`
-	Aliases    *[]Alias  `json:"aliases"`
-	Xp         int32     `json:"xp"`
-	Level      int16     `json:"level"`
+	ProfileId  string                       `json:"profileId"`
+	UserId     string                       `json:"userId"`
+	Platform   string                       `json:"platform"`
+	Nickname   string                       `json:"nickname"`
+	LastUpdate time.Time                    `json:"lastUpdate"`
+	Aliases    *[]Alias                     `json:"aliases"`
+	Xp         int32                        `json:"xp"`
+	Level      int16                        `json:"level"`
+	RankedOne  *[]ubisoft.RankedOutputModel `json:"rankedOne"`
 }
