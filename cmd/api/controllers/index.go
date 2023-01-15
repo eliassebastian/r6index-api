@@ -84,6 +84,14 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 		return err
 	})
 
+	group.Go(func() error {
+		s, err := ubisoft.GetRankedOne(ctx, *ic.client, us, uuid, platform)
+
+		output.RankedOne = s
+
+		return err
+	})
+
 	if err := group.Wait(); err != nil {
 		c.JSON(consts.StatusBadRequest, responses.Error(startTime, err.Error()))
 		return
