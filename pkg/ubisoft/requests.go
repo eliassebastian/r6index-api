@@ -64,3 +64,58 @@ func GetXpAndLevel(ctx context.Context, client client.Client, auth *auth.Ubisoft
 
 	return &xpLevel, nil
 }
+
+func GetPlaytime(ctx context.Context, client client.Client, auth *auth.UbisoftSession, uuid string) {
+
+}
+
+func GetRankedOne(ctx context.Context, client client.Client, auth *auth.UbisoftSession, uuid, platform string) (*[]ubisoft.RankedOutputModel, error) {
+	req := protocol.AcquireRequest()
+	res := protocol.AcquireResponse()
+	defer protocol.ReleaseRequest(req)
+	defer protocol.ReleaseResponse(res)
+
+	req.SetMethod(consts.MethodGet)
+	req.SetRequestURI(rankedOneUri(uuid, platform, false))
+	requestHeaders(req, auth, false)
+
+	err := client.DoRedirects(ctx, req, res, 1)
+	if err != nil {
+		return nil, err
+	}
+
+	var rankedJson ubisoft.RankedModel
+	de := json.NewDecoder(res.BodyStream()).Decode(&rankedJson)
+	if de != nil {
+		return nil, errors.New("error decoding response")
+	}
+
+	validSeasons := rankedJson.SeasonsPlayerSkillRecords[5:]
+	//log.Println(validSeasons)
+
+	var output []ubisoft.RankedOutputModel
+	for _, season := range validSeasons {
+		//log.Println(season)
+		var regions []ubisoft.RankedSeason
+
+		for _, region := range season.RegionsPlayerSkillRecords {
+			if len(region.BoardsPlayerSkillRecords) != 0 {
+				regionInfo := region.BoardsPlayerSkillRecords[0].Seasons[0]
+				if regionInfo.Wins+regionInfo.Losses+regionInfo.Abandons != 0 {
+					regions = append(regions, regionInfo)
+				}
+			}
+		}
+
+		if len(regions) != 0 {
+			seasonOut := ubisoft.RankedOutputModel{
+				SeasonID:  season.SeasonID,
+				SeasonTag: seasons[season.SeasonID].Code,
+				Regions:   regions,
+			}
+			output = append(output, seasonOut)
+		}
+	}
+
+	return &output, nil
+}
