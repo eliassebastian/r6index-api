@@ -25,3 +25,10 @@ var PlatformRankedTwo = map[string]string{
 	"xbl":   "console",
 	"psn":   "console",
 }
+
+var PlatformModernStats = map[string]string{
+	"uplay": "PC",
+	"xbl":   "XBOX",
+	"psn":   "PLAYSTATION",
+	"xplay": "CONSOLE",
+}
