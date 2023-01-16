@@ -5,7 +5,7 @@ import (
 	"github.com/eliassebastian/r6index-api/pkg/auth"
 )
 
-func requestHeaders(req *protocol.Request, auth *auth.UbisoftSession, new bool) {
+func requestHeaders(req *protocol.Request, auth *auth.UbisoftSession, new, modern bool) {
 
 	si := auth.SessionId
 	av := "t=" + auth.Ticket
@@ -17,6 +17,11 @@ func requestHeaders(req *protocol.Request, auth *auth.UbisoftSession, new bool) 
 		av = "t=" + auth.TicketNew
 		ai = UBISOFT_NEWAPPID
 		exp = auth.ExpirationNew
+		req.Header.Set("User-Agent", UBISOFT_USERAGENT)
+	}
+
+	if modern {
+		req.Header.Set("Host", "prod.datadev.ubisoft.com")
 		req.Header.Set("User-Agent", UBISOFT_USERAGENT)
 	}
 

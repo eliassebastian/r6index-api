@@ -22,7 +22,7 @@ func GetPlayerProfile(ctx context.Context, client client.Client, auth *auth.Ubis
 
 	req.SetMethod(consts.MethodGet)
 	req.SetRequestURI(profileUri(name, uuid, platform))
-	requestHeaders(req, auth, false)
+	requestHeaders(req, auth, false, false)
 
 	err := client.DoRedirects(ctx, req, res, 1)
 	if err != nil {
@@ -50,7 +50,7 @@ func GetXpAndLevel(ctx context.Context, client client.Client, auth *auth.Ubisoft
 
 	req.SetMethod(consts.MethodGet)
 	req.SetRequestURI(xpUri(uuid))
-	requestHeaders(req, auth, true)
+	requestHeaders(req, auth, true, false)
 	err := client.DoRedirects(ctx, req, res, 1)
 	if err != nil {
 		return nil, err
@@ -77,7 +77,7 @@ func GetRankedOne(ctx context.Context, client client.Client, auth *auth.UbisoftS
 
 	req.SetMethod(consts.MethodGet)
 	req.SetRequestURI(rankedOneUri(uuid, platform, false))
-	requestHeaders(req, auth, false)
+	requestHeaders(req, auth, false, false)
 
 	err := client.DoRedirects(ctx, req, res, 1)
 	if err != nil {
@@ -132,7 +132,7 @@ func GetRankedTwo(ctx context.Context, client client.Client, auth *auth.UbisoftS
 
 	req.SetMethod(consts.MethodGet)
 	req.SetRequestURI(rankedTwoUri(uuid, platform))
-	requestHeaders(req, auth, true)
+	requestHeaders(req, auth, true, false)
 
 	err := client.DoRedirects(ctx, req, res, 1)
 	if err != nil {
