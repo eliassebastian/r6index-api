@@ -19,3 +19,9 @@ var PlatformGameId = map[string]string{
 	"xbl":   "4008612d-3baf-49e4-957a-33066726a7bc",
 	"psn":   "fb4cc4c9-2063-461d-a1e8-84a7d36525fc",
 }
+
+var PlatformRankedTwo = map[string]string{
+	"uplay": "pc",
+	"xbl":   "console",
+	"psn":   "console",
+}
