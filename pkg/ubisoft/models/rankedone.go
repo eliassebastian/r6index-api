@@ -1,7 +1,7 @@
 package ubisoft
 
 type RankedOutputModel struct {
-	SeasonID  int            `json:"season_id"`
+	SeasonID  int16          `json:"season_id"`
 	SeasonTag string         `json:"season_tag"`
 	Regions   []RankedSeason `json:"regions"`
 }
@@ -11,7 +11,7 @@ type RankedModel struct {
 }
 
 type SeasonsPlayerSkillRecords struct {
-	SeasonID                  int                         `json:"season_id"`
+	SeasonID                  int16                       `json:"season_id"`
 	RegionsPlayerSkillRecords []RegionsPlayerSkillRecords `json:"regions_player_skill_records"`
 }
 
@@ -37,4 +37,6 @@ type RankedSeason struct {
 	Losses      int     `json:"losses"`
 	Leaderboard int     `json:"top_rank_position"`
 	Region      string  `json:"region"`
+	MaxRankText string  `json:"max_rank_text"`
+	RankText    string  `json:"rank_text"`
 }
