@@ -7,7 +7,7 @@ type season struct {
 	Date string
 }
 
-var seasons = map[int]season{
+var seasons = map[int16]season{
 	6: {
 		Name: "Health",
 		Code: "Y2S2",
