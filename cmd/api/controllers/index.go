@@ -76,7 +76,7 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 	group, ctx := errgroup.WithContext(ctx)
 
 	group.Go(func() error {
-		xp, err := ubisoft.GetXpAndLevel(ctx, *ic.client, us, uuid)
+		xp, err := ubisoft.GetXpAndLevel(ctx, *ic.client, us, profile.ProfileID)
 
 		output.Xp = xp.Xp
 		output.Level = xp.Level
@@ -85,9 +85,17 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 	})
 
 	group.Go(func() error {
-		s, err := ubisoft.GetRankedOne(ctx, *ic.client, us, uuid, platform)
+		s, err := ubisoft.GetRankedOne(ctx, *ic.client, us, profile.ProfileID, platform)
 
 		output.RankedOne = s
+
+		return err
+	})
+
+	group.Go(func() error {
+		s, err := ubisoft.GetRankedTwo(ctx, *ic.client, us, profile.ProfileID, platform)
+
+		output.RankedTwo = s
 
 		return err
 	})
