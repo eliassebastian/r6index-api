@@ -2,6 +2,8 @@ package ubisoft
 
 import (
 	"fmt"
+
+	"github.com/eliassebastian/r6index-api/pkg/utils"
 )
 
 func profileUri(name, uuid, platform string) string {
@@ -35,4 +37,32 @@ func rankedTwoUri(uuid, platform string) string {
 	platform = PlatformRankedTwo[platform]
 
 	return fmt.Sprintf("https://public-ubiservices.ubi.com/v2/spaces/0d2ae42d-4c27-4cb7-af6c-2099062302bb/title/r6s/skill/full_profiles?profile_ids=%s&platform_families=%s", uuid, platform)
+}
+
+func weaponsUri(uuid, platform string, xplay bool, date int) string {
+	var dateS string
+
+	if date != 0 {
+		if date < -120 {
+			date = -120
+		}
+
+		dateStart := utils.GetDate(date)
+		dateEnd := utils.GetDate(-1)
+
+		if xplay {
+			dateStart = "20221206"
+		}
+
+		dateS = fmt.Sprintf("&startDate=%s&endDate=%s", dateStart, dateEnd)
+	}
+
+	if xplay && platform != "uplay" {
+		platform = "xplay"
+	}
+
+	spaceId := PlatformSpaceId[platform]
+	platform = PlatformModernStats[platform]
+
+	return fmt.Sprintf("https://prod.datadev.ubisoft.com/v1/users/%s/playerstats?spaceId=%s&view=current&aggregation=weapons&gameMode=ranked&platformGroup=%s&teamRole=all,attacker,defender%s", uuid, spaceId, platform, dateS)
 }
