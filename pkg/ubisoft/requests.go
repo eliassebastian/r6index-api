@@ -100,6 +100,9 @@ func GetRankedOne(ctx context.Context, client client.Client, auth *auth.UbisoftS
 			if len(region.BoardsPlayerSkillRecords) != 0 {
 				regionInfo := region.BoardsPlayerSkillRecords[0].Seasons[0]
 				if regionInfo.Wins+regionInfo.Losses+regionInfo.Abandons != 0 {
+					rankInfoText := getRankInfo(id)
+					regionInfo.MaxRankText = rankInfoText[regionInfo.MaxRank].Name
+					regionInfo.RankText = rankInfoText[regionInfo.Rank].Name
 					regions = append(regions, regionInfo)
 				}
 				if id > 17 {
@@ -116,6 +119,63 @@ func GetRankedOne(ctx context.Context, client client.Client, auth *auth.UbisoftS
 			}
 			output = append(output, seasonOut)
 		}
+	}
+
+	return &output, nil
+}
+
+func GetRankedTwo(ctx context.Context, client client.Client, auth *auth.UbisoftSession, uuid, platform string) (*[]ubisoft.RankedTwoOutputModel, error) {
+	req := protocol.AcquireRequest()
+	res := protocol.AcquireResponse()
+	defer protocol.ReleaseRequest(req)
+	defer protocol.ReleaseResponse(res)
+
+	req.SetMethod(consts.MethodGet)
+	req.SetRequestURI(rankedTwoUri(uuid, platform))
+	requestHeaders(req, auth, true)
+
+	err := client.DoRedirects(ctx, req, res, 1)
+	if err != nil {
+		return nil, err
+	}
+
+	var resJson ubisoft.RankedTwoModel
+	de := json.NewDecoder(res.BodyStream()).Decode(&resJson)
+	if de != nil {
+		return nil, errors.New("error decoding response")
+	}
+
+	var output []ubisoft.RankedTwoOutputModel
+
+	if len(resJson.PlatformFamiliesFullProfiles) == 0 {
+		return &output, nil
+	}
+
+	if len(resJson.PlatformFamiliesFullProfiles[0].BoardIdsFullProfiles) == 0 {
+		return &output, nil
+	}
+
+	if len(resJson.PlatformFamiliesFullProfiles[0].BoardIdsFullProfiles[3].FullProfiles) == 0 {
+		return &output, nil
+	}
+
+	for _, season := range resJson.PlatformFamiliesFullProfiles[0].BoardIdsFullProfiles[3].FullProfiles {
+		rankInfo := getRankInfo(season.Profile.SeasonID)
+		output = append(output, ubisoft.RankedTwoOutputModel{
+			MaxRank:         season.Profile.MaxRank,
+			SeasonID:        season.Profile.SeasonID,
+			Rank:            season.Profile.Rank,
+			MaxRankPoints:   season.Profile.MaxRankPoints,
+			RankPoints:      season.Profile.RankPoints,
+			TopRankPosition: season.Profile.TopRankPosition,
+			Abandons:        season.SeasonStatistics.MatchOutcomes.Abandons,
+			Losses:          season.SeasonStatistics.MatchOutcomes.Losses,
+			Wins:            season.SeasonStatistics.MatchOutcomes.Wins,
+			Deaths:          season.SeasonStatistics.Deaths,
+			Kills:           season.SeasonStatistics.Kills,
+			MaxRankText:     rankInfo[season.Profile.MaxRank].Name,
+			RankText:        rankInfo[season.Profile.Rank].Name,
+		})
 	}
 
 	return &output, nil
