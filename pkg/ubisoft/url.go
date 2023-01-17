@@ -82,3 +82,9 @@ func trendsUri(uuid, platform string, xplay bool) string {
 
 	return fmt.Sprintf("https://prod.datadev.ubisoft.com/v1/users/%s/playerstats?spaceId=%s&view=current&aggregation=movingpoint&trendType=days&gameMode=ranked&platformGroup=%s&teamRole=all%s", uuid, spaceId, platform, dateS)
 }
+
+func summaryUri(uuid, platform string, xplay bool) string {
+	currentSeason := "Y7S4"
+	spaceId := PlatformSpaceId[platform]
+	return fmt.Sprintf("https://prod.datadev.ubisoft.com/v1/users/%s/playerstats?spaceId=%s&view=seasonal&aggregation=summary&gameMode=ranked&platformGroup=%s&teamRole=all&seasons=%s", uuid, spaceId, platform, currentSeason)
+}
