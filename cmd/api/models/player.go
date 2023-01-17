@@ -26,4 +26,7 @@ type Player struct {
 	Level      int16                           `json:"level"`
 	RankedOne  *[]ubisoft.RankedOutputModel    `json:"rankedOne"`
 	RankedTwo  *[]ubisoft.RankedTwoOutputModel `json:"rankedTwo"`
+	Weapons    *ubisoft.WeaponTeamRoles        `json:"weapons"`
+	Maps       *ubisoft.MapsTeamRoles          `json:"maps"`
+	Operators  *ubisoft.OperatorTeamRoles      `json:"operators"`
 }
