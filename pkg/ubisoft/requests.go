@@ -254,7 +254,7 @@ func GetMaps(ctx context.Context, client client.Client, auth *auth.UbisoftSessio
 	var op map[string]interface{}
 	de := json.NewDecoder(res.BodyStream()).Decode(&op)
 	if de != nil {
-		return nil, errors.New("error decoding response (error code: #rw1)")
+		return nil, errors.New("error decoding response (error code: #rm1)")
 	}
 
 	//dirty - find new solution
@@ -264,7 +264,7 @@ func GetMaps(ctx context.Context, client client.Client, auth *auth.UbisoftSessio
 	a, b := utils.Transcode(maps, &result)
 
 	if a != nil || b != nil {
-		return nil, errors.New("error decoding response (error code: #rw2)")
+		return nil, errors.New("error decoding response (error code: #rm2)")
 	}
 
 	return &result.GameModes.Ranked.TeamRoles, nil
@@ -302,10 +302,10 @@ func GetOperators(ctx context.Context, client client.Client, auth *auth.UbisoftS
 	}
 
 	//dirty - find new solution
-	maps := op["profileData"].(map[string]interface{})[uuid].(map[string]interface{})["platforms"].(map[string]interface{})[platform]
+	operators := op["profileData"].(map[string]interface{})[uuid].(map[string]interface{})["platforms"].(map[string]interface{})[platform]
 
 	var result ubisoft.OperatorOutputModel
-	a, b := utils.Transcode(maps, &result)
+	a, b := utils.Transcode(operators, &result)
 
 	if a != nil || b != nil {
 		return nil, errors.New("error decoding response (error code: #rw2)")
@@ -342,18 +342,62 @@ func GetTrends(ctx context.Context, client client.Client, auth *auth.UbisoftSess
 	var op map[string]interface{}
 	de := json.NewDecoder(res.BodyStream()).Decode(&op)
 	if de != nil {
-		return nil, errors.New("error decoding response (error code: #rw1)")
+		return nil, errors.New("error decoding response (error code: #rt1)")
 	}
 
 	//dirty - find new solution
-	maps := op["profileData"].(map[string]interface{})[uuid].(map[string]interface{})["platforms"].(map[string]interface{})[platform]
+	trends := op["profileData"].(map[string]interface{})[uuid].(map[string]interface{})["platforms"].(map[string]interface{})[platform]
 
 	var result ubisoft.TrendsOutputModel
-	a, b := utils.Transcode(maps, &result)
+	a, b := utils.Transcode(trends, &result)
 
 	if a != nil || b != nil {
-		return nil, errors.New("error decoding response (error code: #rw2)")
+		return nil, errors.New("error decoding response (error code: #rt2)")
 	}
 
 	return &result.GameModes.Ranked.TrendTeamRoles, nil
+}
+
+func GetSummary(ctx context.Context, client client.Client, auth *auth.UbisoftSession, uuid, platform string, xplay bool) (*ubisoft.SummaryTeamRoles, error) {
+	if xplay && platform != "uplay" {
+		platform = "xplay"
+	}
+
+	platform = PlatformModernStats[platform]
+
+	req := protocol.AcquireRequest()
+	res := protocol.AcquireResponse()
+	defer protocol.ReleaseRequest(req)
+	defer protocol.ReleaseResponse(res)
+
+	req.SetMethod(consts.MethodGet)
+	req.SetRequestURI(summaryUri(uuid, platform, xplay))
+	requestHeaders(req, auth, false, true)
+
+	err := client.DoRedirects(ctx, req, res, 1)
+	if err != nil {
+		return nil, err
+	}
+
+	if res.StatusCode() != consts.StatusOK {
+		return nil, fmt.Errorf("failed to receive ubisoft response %v", res.StatusCode())
+	}
+
+	var op map[string]interface{}
+	de := json.NewDecoder(res.BodyStream()).Decode(&op)
+	if de != nil {
+		return nil, errors.New("error decoding response (error code: #rs1)")
+	}
+
+	//dirty - find new solution
+	summary := op["profileData"].(map[string]interface{})[uuid].(map[string]interface{})["platforms"].(map[string]interface{})[platform]
+
+	var result ubisoft.SummaryOutputModel
+	a, b := utils.Transcode(summary, &result)
+
+	if a != nil || b != nil {
+		return nil, errors.New("error decoding response (error code: #rs2)")
+	}
+
+	return &result.GameModes.Ranked.TeamRoles, nil
 }
