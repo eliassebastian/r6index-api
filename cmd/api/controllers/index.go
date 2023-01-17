@@ -65,14 +65,6 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 		}},
 	}
 
-	currentAlias := new(models.AliasCache)
-	ce := ic.cache.Once(profile.ProfileID, currentAlias, &models.AliasCache{Name: profile.NameOnPlatform})
-	//ce := ic.cache.Set(ctx, profile.ProfileID, profile.NameOnPlatform, 1*time.Hour)
-	if ce != nil {
-		c.JSON(consts.StatusBadRequest, responses.Error(startTime, ce.Error()))
-		return
-	}
-
 	group, ctx := errgroup.WithContext(ctx)
 
 	group.Go(func() error {
@@ -142,6 +134,14 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 
 	if err := group.Wait(); err != nil {
 		c.JSON(consts.StatusBadRequest, responses.Error(startTime, err.Error()))
+		return
+	}
+
+	//cache alias
+	currentAlias := new(models.AliasCache)
+	ce := ic.cache.Once(profile.ProfileID, currentAlias, &models.AliasCache{Name: profile.NameOnPlatform})
+	if ce != nil {
+		c.JSON(consts.StatusBadRequest, responses.Error(startTime, ce.Error()))
 		return
 	}
 
