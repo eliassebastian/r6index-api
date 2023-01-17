@@ -75,3 +75,10 @@ func operatorUri(uuid, platform string, xplay bool) string {
 
 	return fmt.Sprintf("https://prod.datadev.ubisoft.com/v1/users/%s/playerstats?spaceId=%s&gameMode=ranked&platformGroup=%s&view=seasonal&aggregation=operators&teamRole=Attacker,Defender&seasons=%s", uuid, spaceId, platform, currentSeason)
 }
+
+func trendsUri(uuid, platform string, xplay bool) string {
+	spaceId := PlatformSpaceId[platform]
+	dateS := fmt.Sprintf("&startDate=%s&endDate=%s", utils.GetDate(-30), utils.GetDate(-1))
+
+	return fmt.Sprintf("https://prod.datadev.ubisoft.com/v1/users/%s/playerstats?spaceId=%s&view=current&aggregation=movingpoint&trendType=days&gameMode=ranked&platformGroup=%s&teamRole=all%s", uuid, spaceId, platform, dateS)
+}
