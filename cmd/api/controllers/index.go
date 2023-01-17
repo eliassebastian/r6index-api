@@ -100,6 +100,30 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 		return err
 	})
 
+	group.Go(func() error {
+		w, err := ubisoft.GetWeapons(ctx, *ic.client, us, profile.ProfileID, platform, true)
+
+		output.Weapons = w
+
+		return err
+	})
+
+	group.Go(func() error {
+		w, err := ubisoft.GetMaps(ctx, *ic.client, us, profile.ProfileID, platform, true)
+
+		output.Maps = w
+
+		return err
+	})
+
+	group.Go(func() error {
+		w, err := ubisoft.GetOperators(ctx, *ic.client, us, profile.ProfileID, platform, true)
+
+		output.Operators = w
+
+		return err
+	})
+
 	if err := group.Wait(); err != nil {
 		c.JSON(consts.StatusBadRequest, responses.Error(startTime, err.Error()))
 		return
