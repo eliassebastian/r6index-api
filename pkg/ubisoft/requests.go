@@ -4,12 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 
 	"github.com/cloudwego/hertz/pkg/app/client"
 	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 	"github.com/eliassebastian/r6index-api/pkg/auth"
 	ubisoft "github.com/eliassebastian/r6index-api/pkg/ubisoft/models"
+	"github.com/eliassebastian/r6index-api/pkg/utils"
 )
 
 //import "fmt"
@@ -93,7 +95,6 @@ func GetRankedOne(ctx context.Context, client client.Client, auth *auth.UbisoftS
 	var output []ubisoft.RankedOutputModel
 	for _, season := range rankedJson.SeasonsPlayerSkillRecords {
 		var regions []ubisoft.RankedSeason
-
 		id := season.SeasonID
 
 		for _, region := range season.RegionsPlayerSkillRecords {
@@ -145,19 +146,19 @@ func GetRankedTwo(ctx context.Context, client client.Client, auth *auth.UbisoftS
 		return nil, errors.New("error decoding response")
 	}
 
-	var output []ubisoft.RankedTwoOutputModel
-
 	if len(resJson.PlatformFamiliesFullProfiles) == 0 {
-		return &output, nil
+		return nil, nil
 	}
 
 	if len(resJson.PlatformFamiliesFullProfiles[0].BoardIdsFullProfiles) == 0 {
-		return &output, nil
+		return nil, nil
 	}
 
 	if len(resJson.PlatformFamiliesFullProfiles[0].BoardIdsFullProfiles[3].FullProfiles) == 0 {
-		return &output, nil
+		return nil, nil
 	}
+
+	var output []ubisoft.RankedTwoOutputModel
 
 	for _, season := range resJson.PlatformFamiliesFullProfiles[0].BoardIdsFullProfiles[3].FullProfiles {
 		rankInfo := getRankInfo(season.Profile.SeasonID)
@@ -179,4 +180,136 @@ func GetRankedTwo(ctx context.Context, client client.Client, auth *auth.UbisoftS
 	}
 
 	return &output, nil
+}
+
+func GetWeapons(ctx context.Context, client client.Client, auth *auth.UbisoftSession, uuid, platform string, xplay bool) (*ubisoft.WeaponTeamRoles, error) {
+	if xplay && platform != "uplay" {
+		platform = "xplay"
+	}
+
+	platform = PlatformModernStats[platform]
+
+	req := protocol.AcquireRequest()
+	res := protocol.AcquireResponse()
+	defer protocol.ReleaseRequest(req)
+	defer protocol.ReleaseResponse(res)
+
+	req.SetMethod(consts.MethodGet)
+	req.SetRequestURI(weaponsUri(uuid, platform, -120, xplay))
+	requestHeaders(req, auth, false, true)
+
+	err := client.DoRedirects(ctx, req, res, 1)
+	if err != nil {
+		return nil, err
+	}
+
+	if res.StatusCode() != consts.StatusOK {
+		return nil, fmt.Errorf("failed to receive ubisoft response %v", res.StatusCode())
+	}
+
+	var op map[string]interface{}
+	de := json.NewDecoder(res.BodyStream()).Decode(&op)
+	if de != nil {
+		return nil, errors.New("error decoding response (error code: #rw1)")
+	}
+
+	//dirty - find new solution
+	weapons := op["profileData"].(map[string]interface{})[uuid].(map[string]interface{})["platforms"].(map[string]interface{})[platform]
+
+	var result ubisoft.WeaponsModel
+	a, b := utils.Transcode(weapons, &result)
+
+	if a != nil || b != nil {
+		return nil, errors.New("error decoding response (error code: #rw2)")
+	}
+
+	return &result.GameModes.Ranked.TeamRoles, nil
+}
+
+func GetMaps(ctx context.Context, client client.Client, auth *auth.UbisoftSession, uuid, platform string, xplay bool) (*ubisoft.MapsTeamRoles, error) {
+	if xplay && platform != "uplay" {
+		platform = "xplay"
+	}
+
+	platform = PlatformModernStats[platform]
+
+	req := protocol.AcquireRequest()
+	res := protocol.AcquireResponse()
+	defer protocol.ReleaseRequest(req)
+	defer protocol.ReleaseResponse(res)
+
+	req.SetMethod(consts.MethodGet)
+	req.SetRequestURI(mapUri(uuid, platform, xplay))
+	requestHeaders(req, auth, false, true)
+
+	err := client.DoRedirects(ctx, req, res, 1)
+	if err != nil {
+		return nil, err
+	}
+
+	if res.StatusCode() != consts.StatusOK {
+		return nil, fmt.Errorf("failed to receive ubisoft response %v", res.StatusCode())
+	}
+
+	var op map[string]interface{}
+	de := json.NewDecoder(res.BodyStream()).Decode(&op)
+	if de != nil {
+		return nil, errors.New("error decoding response (error code: #rw1)")
+	}
+
+	//dirty - find new solution
+	maps := op["profileData"].(map[string]interface{})[uuid].(map[string]interface{})["platforms"].(map[string]interface{})[platform]
+
+	var result ubisoft.MapsOutputModel
+	a, b := utils.Transcode(maps, &result)
+
+	if a != nil || b != nil {
+		return nil, errors.New("error decoding response (error code: #rw2)")
+	}
+
+	return &result.GameModes.Ranked.TeamRoles, nil
+}
+
+func GetOperators(ctx context.Context, client client.Client, auth *auth.UbisoftSession, uuid, platform string, xplay bool) (*ubisoft.OperatorTeamRoles, error) {
+	if xplay && platform != "uplay" {
+		platform = "xplay"
+	}
+
+	platform = PlatformModernStats[platform]
+
+	req := protocol.AcquireRequest()
+	res := protocol.AcquireResponse()
+	defer protocol.ReleaseRequest(req)
+	defer protocol.ReleaseResponse(res)
+
+	req.SetMethod(consts.MethodGet)
+	req.SetRequestURI(operatorUri(uuid, platform, xplay))
+	requestHeaders(req, auth, false, true)
+
+	err := client.DoRedirects(ctx, req, res, 1)
+	if err != nil {
+		return nil, err
+	}
+
+	if res.StatusCode() != consts.StatusOK {
+		return nil, fmt.Errorf("failed to receive ubisoft response %v", res.StatusCode())
+	}
+
+	var op map[string]interface{}
+	de := json.NewDecoder(res.BodyStream()).Decode(&op)
+	if de != nil {
+		return nil, errors.New("error decoding response (error code: #rw1)")
+	}
+
+	//dirty - find new solution
+	maps := op["profileData"].(map[string]interface{})[uuid].(map[string]interface{})["platforms"].(map[string]interface{})[platform]
+
+	var result ubisoft.OperatorOutputModel
+	a, b := utils.Transcode(maps, &result)
+
+	if a != nil || b != nil {
+		return nil, errors.New("error decoding response (error code: #rw2)")
+	}
+
+	return &result.GameModes.Ranked.TeamRoles, nil
 }
