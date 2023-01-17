@@ -1,15 +1,15 @@
 package ubisoft
 
-type WeaponsModel struct {
-	GameModes GameModes `json:"gameModes"`
+type WeaponsOutputModel struct {
+	GameModes WeaponGameModes `json:"gameModes"`
 }
 
-type GameModes struct {
-	Ranked Ranked `json:"ranked"`
+type WeaponGameModes struct {
+	Ranked WeaponRanked `json:"ranked"`
 }
 
-type Ranked struct {
-	Type      string          `json:"type"`
+type WeaponRanked struct {
+	//Type      string          `json:"type"`
 	TeamRoles WeaponTeamRoles `json:"teamRoles"`
 }
 
