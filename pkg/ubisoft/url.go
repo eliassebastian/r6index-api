@@ -39,7 +39,7 @@ func rankedTwoUri(uuid, platform string) string {
 	return fmt.Sprintf("https://public-ubiservices.ubi.com/v2/spaces/0d2ae42d-4c27-4cb7-af6c-2099062302bb/title/r6s/skill/full_profiles?profile_ids=%s&platform_families=%s", uuid, platform)
 }
 
-func weaponsUri(uuid, platform string, xplay bool, date int) string {
+func weaponsUri(uuid, platform string, date int, xplay bool) string {
 	var dateS string
 
 	if date != 0 {
@@ -57,12 +57,21 @@ func weaponsUri(uuid, platform string, xplay bool, date int) string {
 		dateS = fmt.Sprintf("&startDate=%s&endDate=%s", dateStart, dateEnd)
 	}
 
-	if xplay && platform != "uplay" {
-		platform = "xplay"
-	}
-
 	spaceId := PlatformSpaceId[platform]
-	platform = PlatformModernStats[platform]
 
 	return fmt.Sprintf("https://prod.datadev.ubisoft.com/v1/users/%s/playerstats?spaceId=%s&view=current&aggregation=weapons&gameMode=ranked&platformGroup=%s&teamRole=all,attacker,defender%s", uuid, spaceId, platform, dateS)
+}
+
+func mapUri(uuid, platform string, xplay bool) string {
+	//todo: move to const
+	currentSeason := "Y7S4"
+	spaceId := PlatformSpaceId[platform]
+	return fmt.Sprintf("https://prod.datadev.ubisoft.com/v1/users/%s/playerstats?spaceId=%s&gameMode=ranked&platformGroup=%s&view=seasonal&aggregation=maps&teamRole=all&seasons=%s", uuid, spaceId, platform, currentSeason)
+}
+
+func operatorUri(uuid, platform string, xplay bool) string {
+	currentSeason := "Y7S4"
+	spaceId := PlatformSpaceId[platform]
+
+	return fmt.Sprintf("https://prod.datadev.ubisoft.com/v1/users/%s/playerstats?spaceId=%s&gameMode=ranked&platformGroup=%s&view=seasonal&aggregation=operators&teamRole=Attacker,Defender&seasons=%s", uuid, spaceId, platform, currentSeason)
 }
