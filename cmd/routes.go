@@ -13,7 +13,7 @@ import (
 )
 
 func routes(s *server.Hertz, sc *serverConfig) {
-	ic := controllers.NewIndexController(sc.Authentication, sc.Client, sc.Cache)
+	ic := controllers.NewIndexController(sc.Authentication, sc.Client, sc.Cache, sc.DB)
 
 	h := s.Group("/v1")
 
