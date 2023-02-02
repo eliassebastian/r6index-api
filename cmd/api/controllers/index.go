@@ -12,6 +12,7 @@ import (
 	"github.com/eliassebastian/r6index-api/cmd/api/validation"
 	"github.com/eliassebastian/r6index-api/pkg/auth"
 	"github.com/eliassebastian/r6index-api/pkg/cache"
+	"github.com/eliassebastian/r6index-api/pkg/meili"
 	"github.com/eliassebastian/r6index-api/pkg/ubisoft"
 	"golang.org/x/sync/errgroup"
 )
@@ -20,13 +21,15 @@ type IndexController struct {
 	auth   *auth.AuthStore
 	client *client.Client
 	cache  *cache.CacheStore
+	db     *meili.MeiliSearchStore
 }
 
-func NewIndexController(a *auth.AuthStore, c *client.Client, cs *cache.CacheStore) *IndexController {
+func NewIndexController(a *auth.AuthStore, c *client.Client, cs *cache.CacheStore, db *meili.MeiliSearchStore) *IndexController {
 	return &IndexController{
 		auth:   a,
 		client: c,
 		cache:  cs,
+		db:     db,
 	}
 }
 
@@ -54,6 +57,7 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 	}
 
 	output := &models.Player{
+		Id:         profile.ProfileID,
 		ProfileId:  profile.ProfileID,
 		UserId:     profile.UserID,
 		Nickname:   profile.NameOnPlatform,
@@ -68,7 +72,11 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 	group, ctx := errgroup.WithContext(ctx)
 
 	group.Go(func() error {
-		xp, err := ubisoft.GetXpAndLevel(ctx, *ic.client, us, profile.ProfileID)
+		xp, err := ubisoft.GetXpAndLevel(ctx, *ic.client, us, profile.ProfileID, platform)
+
+		if err != nil {
+			return err
+		}
 
 		output.Xp = xp.Xp
 		output.Level = xp.Level
@@ -79,13 +87,21 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 	group.Go(func() error {
 		s, err := ubisoft.GetRankedOne(ctx, *ic.client, us, profile.ProfileID, platform)
 
+		if err != nil {
+			return err
+		}
+
 		output.RankedOne = s
 
 		return err
 	})
 
 	group.Go(func() error {
-		s, err := ubisoft.GetRankedTwo(ctx, *ic.client, us, profile.ProfileID, platform)
+		s, err := ubisoft.GetRankedTwo(ctx, *ic.client, us, profile.UserID, platform)
+
+		if err != nil {
+			return err
+		}
 
 		output.RankedTwo = s
 
@@ -93,7 +109,11 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 	})
 
 	group.Go(func() error {
-		w, err := ubisoft.GetWeapons(ctx, *ic.client, us, profile.ProfileID, platform, true)
+		w, err := ubisoft.GetWeapons(ctx, *ic.client, us, profile.UserID, platform, true)
+
+		if err != nil {
+			return err
+		}
 
 		output.Weapons = w
 
@@ -101,7 +121,11 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 	})
 
 	group.Go(func() error {
-		w, err := ubisoft.GetMaps(ctx, *ic.client, us, profile.ProfileID, platform, true)
+		w, err := ubisoft.GetMaps(ctx, *ic.client, us, profile.UserID, platform, true)
+
+		if err != nil {
+			return err
+		}
 
 		output.Maps = w
 
@@ -109,7 +133,11 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 	})
 
 	group.Go(func() error {
-		w, err := ubisoft.GetOperators(ctx, *ic.client, us, profile.ProfileID, platform, true)
+		w, err := ubisoft.GetOperators(ctx, *ic.client, us, profile.UserID, platform, true)
+
+		if err != nil {
+			return err
+		}
 
 		output.Operators = w
 
@@ -117,7 +145,11 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 	})
 
 	group.Go(func() error {
-		w, err := ubisoft.GetTrends(ctx, *ic.client, us, profile.ProfileID, platform, true)
+		w, err := ubisoft.GetTrends(ctx, *ic.client, us, profile.UserID, platform, true)
+
+		if err != nil {
+			return err
+		}
 
 		output.Trends = w
 
@@ -125,7 +157,11 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 	})
 
 	group.Go(func() error {
-		w, err := ubisoft.GetSummary(ctx, *ic.client, us, profile.ProfileID, platform, true)
+		w, err := ubisoft.GetSummary(ctx, *ic.client, us, profile.UserID, platform, true)
+
+		if err != nil {
+			return err
+		}
 
 		output.Summary = w
 
