@@ -16,7 +16,7 @@ type Alias struct {
 }
 
 type Player struct {
-	Id         string                          `json:"id"`
+	//Id         string                          `json:"id"`
 	ProfileId  string                          `json:"profileId"`
 	UserId     string                          `json:"userId"`
 	Platform   string                          `json:"platform"`
