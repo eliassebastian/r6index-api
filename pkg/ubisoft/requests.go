@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/cloudwego/hertz/pkg/app/client"
 	"github.com/cloudwego/hertz/pkg/protocol"
@@ -34,24 +35,28 @@ func GetPlayerProfile(ctx context.Context, client client.Client, auth *auth.Ubis
 	var profile ubisoft.ProfileModel
 	de := json.NewDecoder(res.BodyStream()).Decode(&profile)
 	if de != nil {
-		return nil, errors.New("error decoding response")
+		return nil, errors.New("error decoding response (error code: #rpp1)")
 	}
 
 	if len(profile.Profiles) == 0 {
 		return nil, errors.New("profile not found")
 	}
 
+	if profile.Profiles[0].UserID == "" {
+		return nil, errors.New("ubisoft server error - userid not found")
+	}
+
 	return &profile.Profiles[0], nil
 }
 
-func GetXpAndLevel(ctx context.Context, client client.Client, auth *auth.UbisoftSession, uuid string) (*ubisoft.XpAndLevel, error) {
+func GetXpAndLevel(ctx context.Context, client client.Client, auth *auth.UbisoftSession, uuid, platform string) (*ubisoft.XpAndLevel, error) {
 	req := protocol.AcquireRequest()
 	res := protocol.AcquireResponse()
 	defer protocol.ReleaseRequest(req)
 	defer protocol.ReleaseResponse(res)
 
 	req.SetMethod(consts.MethodGet)
-	req.SetRequestURI(xpUri(uuid))
+	req.SetRequestURI(xpUri(uuid, platform))
 	requestHeaders(req, auth, true, false)
 	err := client.DoRedirects(ctx, req, res, 1)
 	if err != nil {
@@ -61,7 +66,7 @@ func GetXpAndLevel(ctx context.Context, client client.Client, auth *auth.Ubisoft
 	var xpLevel ubisoft.XpAndLevel
 	de := json.NewDecoder(res.BodyStream()).Decode(&xpLevel)
 	if de != nil {
-		return nil, errors.New("error decoding response")
+		return nil, errors.New("error decoding response (error code: #rgxl1)")
 	}
 
 	return &xpLevel, nil
@@ -89,7 +94,7 @@ func GetRankedOne(ctx context.Context, client client.Client, auth *auth.UbisoftS
 	var rankedJson ubisoft.RankedModel
 	de := json.NewDecoder(res.BodyStream()).Decode(&rankedJson)
 	if de != nil {
-		return nil, errors.New("error decoding response")
+		return nil, errors.New("error decoding response (error code: #rr11)")
 	}
 
 	var output []ubisoft.RankedOutputModel
@@ -143,7 +148,7 @@ func GetRankedTwo(ctx context.Context, client client.Client, auth *auth.UbisoftS
 	var resJson ubisoft.RankedTwoModel
 	de := json.NewDecoder(res.BodyStream()).Decode(&resJson)
 	if de != nil {
-		return nil, errors.New("error decoding response")
+		return nil, errors.New("error decoding response (error code: #rr21)")
 	}
 
 	if len(resJson.PlatformFamiliesFullProfiles) == 0 {
@@ -314,7 +319,7 @@ func GetOperators(ctx context.Context, client client.Client, auth *auth.UbisoftS
 	return &result.GameModes.Ranked.TeamRoles, nil
 }
 
-func GetTrends(ctx context.Context, client client.Client, auth *auth.UbisoftSession, uuid, platform string, xplay bool) (*ubisoft.TrendsTeamRoles, error) {
+func GetTrends(ctx context.Context, client client.Client, auth *auth.UbisoftSession, uuid, platform string, xplay bool) (*ubisoft.TrendOutput, error) {
 	if xplay && platform != "uplay" {
 		platform = "xplay"
 	}
@@ -346,16 +351,45 @@ func GetTrends(ctx context.Context, client client.Client, auth *auth.UbisoftSess
 	}
 
 	//dirty - find new solution
-	trends := op["profileData"].(map[string]interface{})[uuid].(map[string]interface{})["platforms"].(map[string]interface{})[platform]
+	//trends := op["profileData"].(map[string]interface{})[uuid].(map[string]interface{})["platforms"].(map[string]interface{})[platform].(map[string]interface{})["gameModes"].(map[string]interface{})["ranked"].(map[string]interface{})["teamRoles"].(map[string]interface{})["all"].([]interface{})
+	trends := op["profileData"].(map[string]interface{})[uuid].(map[string]interface{})["platforms"].(map[string]interface{})[platform].(map[string]interface{})["gameModes"].(map[string]interface{})["ranked"].(map[string]interface{})["teamRoles"].(map[string]interface{})["all"].([]interface{})
 
-	var result ubisoft.TrendsOutputModel
-	a, b := utils.Transcode(trends, &result)
-
-	if a != nil || b != nil {
-		return nil, errors.New("error decoding response (error code: #rt2)")
+	if len(trends) == 0 {
+		return nil, errors.New("failed to receive ubisoft response")
 	}
 
-	return &result.GameModes.Ranked.TrendTeamRoles, nil
+	trendsTwo := trends[0].(map[string]interface{})
+	trendsOutputArray := make([]ubisoft.TrendTypeOutput, 0, 12)
+
+	for _, trend := range []string{"winLossRatio", "killDeathRatio", "headshotAccuracy", "killsPerRound", "roundsWithAKill", "roundsWithMultiKill", "roundsWithOpeningKill", "roundsWithOpeningDeath", "roundsWithKOST", "roundsSurvived", "ratioTimeAlivePerMatch", "distancePerRound"} {
+		trendM := trendsTwo[trend].(map[string]interface{})
+
+		trendMap := trendM["trend"].(map[string]interface{})
+		actualMap := trendM["actuals"].(map[string]interface{})
+		trendArray := make([]float64, 0, len(trendMap))
+		actualArray := make([]float64, 0, len(actualMap))
+
+		for i := 1; i <= len(trendMap); i++ {
+			trendArray = append(trendArray, trendMap[strconv.Itoa(i)].(float64))
+		}
+
+		for i := 1; i <= len(actualMap); i++ {
+			actualArray = append(actualArray, actualMap[strconv.Itoa(i)].(float64))
+		}
+
+		trendTypeOutput := ubisoft.TrendTypeOutput{
+			Name:    trend,
+			High:    trendM["high"].(float64),
+			Average: trendM["average"].(float64),
+			Low:     trendM["low"].(float64),
+			Actuals: actualArray,
+			Trend:   trendArray,
+		}
+
+		trendsOutputArray = append(trendsOutputArray, trendTypeOutput)
+	}
+
+	return &ubisoft.TrendOutput{MovingPoints: trendsTwo["movingPoints"].(float64), Trends: trendsOutputArray}, nil
 }
 
 func GetSummary(ctx context.Context, client client.Client, auth *auth.UbisoftSession, uuid, platform string, xplay bool) (*ubisoft.SummaryTeamRoles, error) {
