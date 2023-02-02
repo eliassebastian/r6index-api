@@ -8,6 +8,32 @@ type TrendType struct {
 	Actuals map[string]float64 `json:"actuals"`
 }
 
+type TrendTypeOutput struct {
+	Name    string    `json:"name"`
+	High    float64   `json:"high"`
+	Average float64   `json:"average"`
+	Low     float64   `json:"low"`
+	Trend   []float64 `json:"trend"`
+	Actuals []float64 `json:"actuals"`
+}
+
+type TrendOutput struct {
+	MovingPoints float64           `json:"movingPoints"`
+	Trends       []TrendTypeOutput `json:"trends"`
+	// WinLossRatio           TrendTypeOutput `json:"winLossRatio"`
+	// KillDeathRatio         TrendTypeOutput `json:"killDeathRatio"`
+	// HeadshotAccuracy       TrendTypeOutput `json:"headshotAccuracy"`
+	// KillsPerRound          TrendTypeOutput `json:"killsPerRound"`
+	// RoundsWithAKill        TrendTypeOutput `json:"roundsWithAKill"`
+	// RoundsWithMultiKill    TrendTypeOutput `json:"roundsWithMultiKill"`
+	// RoundsWithOpeningKill  TrendTypeOutput `json:"roundsWithOpeningKill"`
+	// RoundsWithOpeningDeath TrendTypeOutput `json:"roundsWithOpeningDeath"`
+	// RoundsWithKOST         TrendTypeOutput `json:"roundsWithKOST"`
+	// RoundsSurvived         TrendTypeOutput `json:"roundsSurvived"`
+	// RatioTimeAlivePerMatch TrendTypeOutput `json:"ratioTimeAlivePerMatch"`
+	// DistancePerRound       TrendTypeOutput `json:"distancePerRound"`
+}
+
 type Trend struct {
 	Type                   string    `json:"type"`
 	StatsType              string    `json:"statsType"`
