@@ -45,6 +45,10 @@ func (c *CacheStore) Once(key string, set interface{}, obj interface{}) error {
 	})
 }
 
+func (c *CacheStore) GetCache(ctx context.Context, key string, value interface{}) error {
+	return c.cache.Get(ctx, key, value)
+}
+
 // func (c *CacheStore) Set(ctx context.Context, key string, value interface{}) error {
 // 	return c.cache.Set(&cache.Item{
 // 		Ctx:   ctx,
