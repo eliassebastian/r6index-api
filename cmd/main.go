@@ -15,6 +15,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/eliassebastian/r6index-api/pkg/auth"
 	"github.com/eliassebastian/r6index-api/pkg/cache"
+	"github.com/eliassebastian/r6index-api/pkg/meili"
 	"github.com/eliassebastian/r6index-api/pkg/rabbitmq"
 )
 
@@ -23,6 +24,7 @@ type serverConfig struct {
 	Rabbit         *rabbitmq.RabbitConsumer
 	Client         *client.Client
 	Cache          *cache.CacheStore
+	DB             *meili.MeiliSearchStore
 }
 
 func main() {
@@ -70,11 +72,20 @@ func main() {
 		return
 	}
 
+	m := meili.New()
+	//m.Init()
+	// e := m.GetKeys()
+	// if e != nil {
+	// 	log.Println(e)
+	// 	return
+	// }
+
 	sc := &serverConfig{
 		Authentication: auth,
 		Client:         c,
 		Rabbit:         rabbit,
 		Cache:          redis,
+		DB:             m,
 	}
 
 	routes(h, sc)
