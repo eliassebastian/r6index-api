@@ -31,5 +31,5 @@ type Player struct {
 	Weapons    *ubisoft.WeaponTeamRoles        `json:"weapons"`
 	Maps       *ubisoft.MapsTeamRoles          `json:"maps"`
 	Operators  *ubisoft.OperatorTeamRoles      `json:"operators"`
-	Trends     *ubisoft.TrendsTeamRoles        `json:"trends"`
+	Trends     *ubisoft.TrendOutput            `json:"trends"`
 }
