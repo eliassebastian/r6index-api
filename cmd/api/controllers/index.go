@@ -57,7 +57,7 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 	}
 
 	output := &models.Player{
-		Id:         profile.ProfileID,
+		//Id:         profile.ProfileID,
 		ProfileId:  profile.ProfileID,
 		UserId:     profile.UserID,
 		Nickname:   profile.NameOnPlatform,
@@ -181,7 +181,14 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 		return
 	}
 
-	c.JSON(consts.StatusOK, responses.Success(startTime, output))
+	_, de := ic.db.DB.Index(platform).UpdateDocuments(output)
+
+	if de != nil {
+		c.JSON(consts.StatusBadRequest, responses.Error(startTime, "internal error (db1)"))
+		return
+	}
+
+	c.JSON(consts.StatusAccepted, responses.Success(startTime, output))
 
 	//fetch different stats
 	//insert into db
