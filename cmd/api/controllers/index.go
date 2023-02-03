@@ -65,14 +65,13 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 	}
 
 	playerFound.Id = profile.ProfileID
-
 	output := &models.Player{
 		//Id:         profile.ProfileID,
 		ProfileId:  profile.ProfileID,
 		UserId:     profile.UserID,
 		Nickname:   profile.NameOnPlatform,
 		Platform:   profile.PlatformType,
-		LastUpdate: startTime.UTC(),
+		LastUpdate: startTime.UTC().Unix(),
 		Aliases: &[]models.Alias{{
 			Name: profile.NameOnPlatform,
 			Date: startTime.UTC(),
@@ -190,6 +189,11 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 	// 	LastUpdate: startTime.UTC(),
 	// })
 
+	// currentAlias := &[]models.Alias{{
+	// 	Name: profile.NameOnPlatform,
+	// 	Date: startTime.UTC(),
+	// }}
+	// ce := ic.cache.SetOnce(profile.ProfileID, currentAlias)
 	// if ce != nil {
 	// 	c.JSON(consts.StatusBadRequest, responses.Error(startTime, ce.Error()))
 	// 	return
@@ -202,9 +206,4 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 	}
 
 	c.JSON(consts.StatusAccepted, responses.Success(startTime, playerFound))
-
-	//fetch different stats
-	//insert into db
-	//convert to readable json
-	//return response
 }
