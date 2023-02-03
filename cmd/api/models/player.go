@@ -7,12 +7,17 @@ import (
 )
 
 type AliasCache struct {
-	Name string
+	Name       string
+	LastUpdate time.Time
 }
 
 type Alias struct {
 	Name string    `json:"name"`
 	Date time.Time `json:"date"`
+}
+
+type PlayerFound struct {
+	Id string `json:"profileId"`
 }
 
 type Player struct {
