@@ -34,7 +34,7 @@ func NewIndexController(a *auth.AuthStore, c *client.Client, cs *cache.CacheStor
 }
 
 func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestContext) {
-	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 
 	startTime := time.Now()
@@ -55,6 +55,16 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 		c.JSON(consts.StatusBadRequest, responses.Error(startTime, err.Error()))
 		return
 	}
+
+	var playerFound models.PlayerFound
+	pfe := ic.db.FindPlayer(platform, profile.ProfileID, &playerFound)
+	//player found
+	if pfe == nil {
+		c.JSON(consts.StatusOK, responses.Success(startTime, &playerFound))
+		return
+	}
+
+	playerFound.Id = profile.ProfileID
 
 	output := &models.Player{
 		//Id:         profile.ProfileID,
@@ -174,21 +184,24 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 	}
 
 	//cache alias
-	currentAlias := new(models.AliasCache)
-	ce := ic.cache.Once(profile.ProfileID, currentAlias, &models.AliasCache{Name: profile.NameOnPlatform})
-	if ce != nil {
-		c.JSON(consts.StatusBadRequest, responses.Error(startTime, ce.Error()))
-		return
-	}
+	// currentAlias := new(models.AliasCache)
+	// ce := ic.cache.Once(profile.ProfileID, currentAlias, &models.AliasCache{
+	// 	Name:       profile.NameOnPlatform,
+	// 	LastUpdate: startTime.UTC(),
+	// })
+
+	// if ce != nil {
+	// 	c.JSON(consts.StatusBadRequest, responses.Error(startTime, ce.Error()))
+	// 	return
+	// }
 
 	_, de := ic.db.DB.Index(platform).UpdateDocuments(output)
-
 	if de != nil {
 		c.JSON(consts.StatusBadRequest, responses.Error(startTime, "internal error (db1)"))
 		return
 	}
 
-	c.JSON(consts.StatusAccepted, responses.Success(startTime, output))
+	c.JSON(consts.StatusAccepted, responses.Success(startTime, playerFound))
 
 	//fetch different stats
 	//insert into db
