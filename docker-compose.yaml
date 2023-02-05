@@ -13,7 +13,7 @@ services:
       - MEILI_MASTER_KEY=${MEILI_MASTER_KEY}
 
   rabbitmq:
-    hostname: rabbit
+    hostname: rabbitmq
     container_name: rabbitmq
     image: arm64v8/rabbitmq:3.11.5-management
     ports:
@@ -33,6 +33,21 @@ services:
     volumes:
       - ./redis.conf:/usr/local/etc/redis/redis.conf
     command: redis-server /usr/local/etc/redis/redis.conf
+  
+  auth:
+    container_name: auth_service
+    image: r6indexauth:latest
+    restart: always 
+    environment:
+      - UBISOFT_USERNAME=${UBISOFT_USERNAME}
+      - UBISOFT_PASS=${UBISOFT_PASS}
+      - UBISOFT_SESSIONREFRESH=${UBISOFT_SESSIONREFRESH}
+      - RABBITMQ_URL=${RABBITMQ_URL}
+    depends_on:
+      - rabbitmq
+
+
+
     
 
     
