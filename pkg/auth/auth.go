@@ -35,15 +35,15 @@ func (as *AuthStore) Read() *UbisoftSession {
 }
 
 func (as *AuthStore) Write(b []byte) error {
-	as.m.Lock()
-	defer as.m.Unlock()
-
 	var packet UbisoftSession
 	err := json.NewDecoder(bytes.NewReader(b)).Decode(&packet)
 	if err != nil {
 		return err
 	}
 
+	as.m.Lock()
 	as.UbisoftSession = packet
+	as.m.Unlock()
+
 	return nil
 }
