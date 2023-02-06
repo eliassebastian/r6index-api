@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/eliassebastian/r6index-api/pkg/utils"
 	"github.com/go-redis/cache/v8"
 	"github.com/go-redis/redis/v8"
 )
@@ -15,8 +16,8 @@ type CacheStore struct {
 
 func New(ctx context.Context) (*CacheStore, error) {
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "",
+		Addr:     utils.GetEnv("REDIS_URL", "localhost:6379"),
+		Password: utils.GetEnv("REDIS_PASSWORD", ""),
 		DB:       0,
 	})
 
