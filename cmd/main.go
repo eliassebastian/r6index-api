@@ -17,6 +17,7 @@ import (
 	"github.com/eliassebastian/r6index-api/pkg/cache"
 	"github.com/eliassebastian/r6index-api/pkg/meili"
 	"github.com/eliassebastian/r6index-api/pkg/rabbitmq"
+	"github.com/eliassebastian/r6index-api/pkg/utils"
 )
 
 type serverConfig struct {
@@ -29,7 +30,7 @@ type serverConfig struct {
 
 func main() {
 	h := server.Default(
-		server.WithHostPorts("127.0.0.1:8080"),
+		server.WithHostPorts(utils.GetEnv("API_URL", "127.0.0.1:8080")),
 		server.WithIdleTimeout(30*time.Second),
 		server.WithExitWaitTime(5*time.Second),
 	)
@@ -72,13 +73,11 @@ func main() {
 		return
 	}
 
-	m := meili.New()
-	//m.Init()
-	// e := m.GetKeys()
-	// if e != nil {
-	// 	log.Println(e)
-	// 	return
-	// }
+	m, err := meili.New()
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
 
 	sc := &serverConfig{
 		Authentication: auth,
@@ -92,12 +91,12 @@ func main() {
 
 	// graceful shutdown function
 	h.OnShutdown = append(h.OnShutdown, func(ctx context.Context) {
-		stop()
 		rabbit.Close()
+
+		stop()
 		<-ctx.Done()
 	})
 
 	go rabbit.Consume(ctx)
-
 	h.Spin()
 }
