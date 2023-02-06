@@ -17,5 +17,5 @@ WORKDIR /app
 COPY --from=build /build/r6index_api .
 # COPY --from=build /build/.env .
 
-EXPOSE  8080/tcp
+EXPOSE 8080
 CMD [ "./r6index_api" ]
