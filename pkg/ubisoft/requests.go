@@ -15,8 +15,6 @@ import (
 	"github.com/eliassebastian/r6index-api/pkg/utils"
 )
 
-//import "fmt"
-
 func GetPlayerProfile(ctx context.Context, client client.Client, auth *auth.UbisoftSession, name, uuid, platform string) (*ubisoft.Profile, error) {
 	req := protocol.AcquireRequest()
 	res := protocol.AcquireResponse()
@@ -351,7 +349,6 @@ func GetTrends(ctx context.Context, client client.Client, auth *auth.UbisoftSess
 	}
 
 	//dirty - find new solution
-	//trends := op["profileData"].(map[string]interface{})[uuid].(map[string]interface{})["platforms"].(map[string]interface{})[platform].(map[string]interface{})["gameModes"].(map[string]interface{})["ranked"].(map[string]interface{})["teamRoles"].(map[string]interface{})["all"].([]interface{})
 	trends := op["profileData"].(map[string]interface{})[uuid].(map[string]interface{})["platforms"].(map[string]interface{})[platform].(map[string]interface{})["gameModes"].(map[string]interface{})["ranked"].(map[string]interface{})["teamRoles"].(map[string]interface{})["all"].([]interface{})
 
 	if len(trends) == 0 {
