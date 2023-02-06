@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/eliassebastian/r6index-api/cmd/api/models"
+	"github.com/eliassebastian/r6index-api/pkg/utils"
 	"github.com/meilisearch/meilisearch-go"
 )
 
@@ -11,16 +12,20 @@ type MeiliSearchStore struct {
 	DB *meilisearch.Client
 }
 
-func New() *MeiliSearchStore {
+func New() (*MeiliSearchStore, error) {
 	client := meilisearch.NewClient(meilisearch.ClientConfig{
-		Host:   "http://127.0.0.1:7700",
-		APIKey: "85d7c22efd3395fd5ed83c546f514585f6fa7e8ff4ed982fdf66c1b1cac24aef",
-		//APIKey: "qXPkGJcYpUQuGHUncsPpHxGsqwGygvXQUhUtzTATCbuBaHeYufTWtLddeYMHttFN",
+		Host:   utils.GetEnv("MEILI_URL", "http://127.0.0.1:7700"),
+		APIKey: utils.GetEnv("MEILI_API_KEY", ""),
 	})
+
+	_, err := client.GetVersion()
+	if err != nil {
+		return nil, err
+	}
 
 	return &MeiliSearchStore{
 		DB: client,
-	}
+	}, nil
 }
 
 func (m *MeiliSearchStore) Init() error {
