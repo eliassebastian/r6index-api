@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/eliassebastian/r6index-api/pkg/auth"
+	"github.com/eliassebastian/r6index-api/pkg/utils"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
@@ -15,7 +16,8 @@ type RabbitConsumer struct {
 }
 
 func New(auth *auth.AuthStore) (*RabbitConsumer, error) {
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+	url := utils.GetEnv("RABBITMQ_URL", "amqp://guest:guest@localhost:5672/")
+	conn, err := amqp.Dial(url)
 	if err != nil {
 		return nil, err
 	}
@@ -33,8 +35,6 @@ func New(auth *auth.AuthStore) (*RabbitConsumer, error) {
 }
 
 func (r *RabbitConsumer) Consume(ctx context.Context) {
-	log.Println("RabbitMQ Consumer Running")
-
 	msgs, err := r.channel.Consume(
 		"auth", // queue
 		"",     // consumer
@@ -52,10 +52,8 @@ func (r *RabbitConsumer) Consume(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
-			log.Println("Exiting RabbitMQ Loop")
 			return
 		case msg := <-msgs:
-			log.Println("New Message")
 			err := r.auth.Write(msg.Body)
 			if err != nil {
 				log.Println("could not write to session cache")
@@ -65,7 +63,6 @@ func (r *RabbitConsumer) Consume(ctx context.Context) {
 }
 
 func (r *RabbitConsumer) Close() {
-	log.Println("closing rabbitmq connection")
 	r.channel.Close()
 	r.connection.Close()
 }
