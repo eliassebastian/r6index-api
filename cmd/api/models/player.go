@@ -51,11 +51,11 @@ type PlayerUpdate struct {
 	Aliases    *[]Alias                        `json:"aliases,omitempty"`
 	Xp         int32                           `json:"xp"`
 	Level      int16                           `json:"level"`
-	Summary    *ubisoft.SummaryTeamRoles       `json:"summary"`
-	RankedOne  *[]ubisoft.RankedOutputModel    `json:"rankedOne"`
-	RankedTwo  *[]ubisoft.RankedTwoOutputModel `json:"rankedTwo"`
-	Weapons    *ubisoft.WeaponTeamRoles        `json:"weapons"`
-	Maps       *ubisoft.MapsTeamRoles          `json:"maps"`
-	Operators  *ubisoft.OperatorTeamRoles      `json:"operators"`
-	Trends     *ubisoft.TrendOutput            `json:"trends"`
+	Summary    *ubisoft.SummaryTeamRoles       `json:"summary,omitempty"`
+	RankedOne  *[]ubisoft.RankedOutputModel    `json:"rankedOne,omitempty"`
+	RankedTwo  *[]ubisoft.RankedTwoOutputModel `json:"rankedTwo,omitempty"`
+	Weapons    *ubisoft.WeaponTeamRoles        `json:"weapons,omitempty"`
+	Maps       *ubisoft.MapsTeamRoles          `json:"maps,omitempty"`
+	Operators  *ubisoft.OperatorTeamRoles      `json:"operators,omitempty"`
+	Trends     *ubisoft.TrendOutput            `json:"trends,omitempty"`
 }
