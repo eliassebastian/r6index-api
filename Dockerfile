@@ -20,4 +20,4 @@ COPY --from=build /build/r6index_api .
 EXPOSE 8080
 CMD [ "./r6index_api" ]
 
-#docker buildx build --push --platform=linux/amd64,linux/arm64 --tag eliassebastian/r6index-auth:0.5.1 .
+#docker buildx build --push --platform=linux/amd64,linux/arm64 --tag eliassebastian/r6index-api:0.5.1 .
