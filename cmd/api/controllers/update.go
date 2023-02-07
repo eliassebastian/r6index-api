@@ -188,7 +188,7 @@ func (uc *UpdateController) RequestHandler(ctx context.Context, c *app.RequestCo
 
 	output.LastUpdate = startTime.UTC().Unix()
 
-	_, de := uc.db.DB.Index(platform).UpdateDocuments(output, profile.ProfileID)
+	_, de := uc.db.DB.Index(platform).UpdateDocuments(output)
 	if de != nil {
 		c.JSON(consts.StatusBadRequest, responses.Error(startTime, "internal error (db1)"))
 		return
