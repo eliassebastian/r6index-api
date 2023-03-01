@@ -19,8 +19,8 @@ func playtimeUri(uuid string) string {
 }
 
 func xpUri(uuid, platform string) string {
-	platform = PlatformSpaceId[platform]
-	return fmt.Sprintf("https://public-ubiservices.ubi.com/v1/spaces/%s/title/r6s/rewards/public_profile?profile_id=%s", platform, uuid)
+	//platform = PlatformSpaceId[platform]
+	return fmt.Sprintf("https://public-ubiservices.ubi.com/v1/spaces/0d2ae42d-4c27-4cb7-af6c-2099062302bb/title/r6s/rewards/public_profile?profile_id=%s", uuid)
 }
 
 func rankedOneUri(uuid, platform string, xplay bool) string {
