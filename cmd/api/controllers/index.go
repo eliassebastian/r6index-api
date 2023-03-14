@@ -6,7 +6,9 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/client"
+	"github.com/cloudwego/hertz/pkg/app/server/binding"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
+	"github.com/cloudwego/hertz/pkg/route/param"
 	"github.com/eliassebastian/r6index-api/cmd/api/models"
 	"github.com/eliassebastian/r6index-api/cmd/api/responses"
 	"github.com/eliassebastian/r6index-api/cmd/api/validation"
@@ -33,31 +35,42 @@ func NewIndexController(a *auth.AuthStore, c *client.Client, cs *cache.CacheStor
 	}
 }
 
+type requestParams struct {
+	Platform string `json:"platform"`
+	Name     string `json:"name"`
+	Id       string `json:"id"`
+}
+
 func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestContext) {
 	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 
 	startTime := time.Now()
+	var req requestParams
 
-	platform := c.PostForm("platform")
-	name := c.PostForm("name")
-	uuid := c.PostForm("id")
+	//validate request params
+	err := binding.BindAndValidate(&c.Request, &req, param.Params{})
+	if err != nil {
+		c.JSON(consts.StatusBadRequest, responses.Error(time.Now(), err.Error()))
+		return
+	}
 
-	if err := validation.All(platform, name, uuid); err != nil {
+	if err := validation.All(req.Platform, req.Name, req.Id); err != nil {
 		c.JSON(consts.StatusBadRequest, responses.Error(startTime, err.Error()))
 		return
 	}
 
 	//fetch ubisoft session
 	us := ic.auth.Read()
-	profile, err := ubisoft.GetPlayerProfile(ctx, *ic.client, us, name, uuid, platform)
+	profile, err := ubisoft.GetPlayerProfile(ctx, *ic.client, us, req.Name, req.Id, req.Platform)
 	if err != nil {
 		c.JSON(consts.StatusBadRequest, responses.Error(startTime, err.Error()))
 		return
 	}
 
+	//check if player exists in db
 	var playerFound models.PlayerFound
-	pfe := ic.db.FindPlayer(platform, profile.ProfileID, &playerFound)
+	pfe := ic.db.FindPlayer(req.Platform, profile.ProfileID, &playerFound)
 	//player found
 	if pfe == nil {
 		c.JSON(consts.StatusOK, responses.Success(startTime, &playerFound))
@@ -65,12 +78,15 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 	}
 
 	playerFound.Id = profile.ProfileID
+	playerFound.Name = profile.NameOnPlatform
+
 	output := &models.Player{
 		//Id:         profile.ProfileID,
 		ProfileId:  profile.ProfileID,
 		UserId:     profile.UserID,
 		Nickname:   profile.NameOnPlatform,
 		Platform:   profile.PlatformType,
+		FirstIndex: startTime.UTC().Unix(),
 		LastUpdate: startTime.UTC().Unix(),
 		Aliases: &[]models.Alias{{
 			Name: profile.NameOnPlatform,
@@ -81,7 +97,7 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 	group, ctx := errgroup.WithContext(ctx)
 
 	group.Go(func() error {
-		xp, err := ubisoft.GetXpAndLevel(ctx, *ic.client, us, profile.ProfileID, platform)
+		xp, err := ubisoft.GetXpAndLevel(ctx, *ic.client, us, profile.ProfileID, req.Platform)
 
 		if err != nil {
 			return err
@@ -94,19 +110,19 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 	})
 
 	group.Go(func() error {
-		s, err := ubisoft.GetRankedOne(ctx, *ic.client, us, profile.ProfileID, platform)
+		s, err := ubisoft.GetLastSeen(ctx, *ic.client, us, profile.ProfileID, req.Platform)
 
 		if err != nil {
 			return err
 		}
 
-		output.RankedOne = s
+		output.LastSeeen = s
 
 		return err
 	})
 
 	group.Go(func() error {
-		s, err := ubisoft.GetRankedTwo(ctx, *ic.client, us, profile.UserID, platform)
+		s, err := ubisoft.GetRankedTwo(ctx, *ic.client, us, profile.UserID, req.Platform)
 
 		if err != nil {
 			return err
@@ -118,7 +134,7 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 	})
 
 	group.Go(func() error {
-		w, err := ubisoft.GetWeapons(ctx, *ic.client, us, profile.UserID, platform, true)
+		w, err := ubisoft.GetWeapons(ctx, *ic.client, us, profile.UserID, req.Platform, true)
 
 		if err != nil {
 			return err
@@ -130,7 +146,7 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 	})
 
 	group.Go(func() error {
-		w, err := ubisoft.GetMaps(ctx, *ic.client, us, profile.UserID, platform, true)
+		w, err := ubisoft.GetMaps(ctx, *ic.client, us, profile.UserID, req.Platform, true)
 
 		if err != nil {
 			return err
@@ -142,7 +158,7 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 	})
 
 	group.Go(func() error {
-		w, err := ubisoft.GetOperators(ctx, *ic.client, us, profile.UserID, platform, true)
+		w, err := ubisoft.GetOperators(ctx, *ic.client, us, profile.UserID, req.Platform, true)
 
 		if err != nil {
 			return err
@@ -154,7 +170,7 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 	})
 
 	group.Go(func() error {
-		w, err := ubisoft.GetTrends(ctx, *ic.client, us, profile.UserID, platform, true)
+		w, err := ubisoft.GetTrends(ctx, *ic.client, us, profile.UserID, req.Platform, true)
 
 		if err != nil {
 			return err
@@ -166,7 +182,7 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 	})
 
 	group.Go(func() error {
-		w, err := ubisoft.GetSummary(ctx, *ic.client, us, profile.UserID, platform, true)
+		w, err := ubisoft.GetSummary(ctx, *ic.client, us, profile.UserID, req.Platform, true)
 
 		if err != nil {
 			return err
@@ -182,28 +198,12 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 		return
 	}
 
-	//cache alias
-	// currentAlias := new(models.AliasCache)
-	// ce := ic.cache.Once(profile.ProfileID, currentAlias, &models.AliasCache{
-	// 	Name:       profile.NameOnPlatform,
-	// 	LastUpdate: startTime.UTC(),
-	// })
-
-	// currentAlias := &[]models.Alias{{
-	// 	Name: profile.NameOnPlatform,
-	// 	Date: startTime.UTC(),
-	// }}
-	// ce := ic.cache.SetOnce(profile.ProfileID, currentAlias)
-	// if ce != nil {
-	// 	c.JSON(consts.StatusBadRequest, responses.Error(startTime, ce.Error()))
+	// _, de := ic.db.DB.Index(platform).UpdateDocuments(output)
+	// if de != nil {
+	// 	c.JSON(consts.StatusBadRequest, responses.Error(startTime, "internal error (db1)"))
 	// 	return
 	// }
 
-	_, de := ic.db.DB.Index(platform).UpdateDocuments(output)
-	if de != nil {
-		c.JSON(consts.StatusBadRequest, responses.Error(startTime, "internal error (db1)"))
-		return
-	}
-
-	c.JSON(consts.StatusAccepted, responses.Success(startTime, playerFound))
+	//playerFound
+	c.JSON(consts.StatusAccepted, responses.Success(startTime, output))
 }
