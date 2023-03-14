@@ -14,9 +14,9 @@ type WeaponRanked struct {
 }
 
 type WeaponTeamRoles struct {
-	All      WeaponTeamRole `json:"all"`
-	Attacker WeaponTeamRole `json:"attacker"`
-	Defender WeaponTeamRole `json:"defender"`
+	All WeaponTeamRole `json:"all"`
+	// Attacker WeaponTeamRole `json:"attacker"`
+	// Defender WeaponTeamRole `json:"defender"`
 }
 
 type WeaponTeamRole struct {
