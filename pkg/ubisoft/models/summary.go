@@ -11,28 +11,28 @@ type Summary struct {
 	// StatsDetail            string                 `json:"statsDetail"`
 	// SeasonYear             string                 `json:"seasonYear"`
 	// SeasonNumber           string                 `json:"seasonNumber"`
-	MatchesPlayed          int           `json:"matchesPlayed"`
-	RoundsPlayed           int           `json:"roundsPlayed"`
-	MinutesPlayed          int           `json:"minutesPlayed"`
-	MatchesWon             int           `json:"matchesWon"`
-	MatchesLost            int           `json:"matchesLost"`
-	RoundsWon              int           `json:"roundsWon"`
-	RoundsLost             int           `json:"roundsLost"`
-	Kills                  int           `json:"kills"`
-	Assists                int           `json:"assists"`
-	Death                  int           `json:"death"`
-	Headshots              int           `json:"headshots"`
-	MeleeKills             int           `json:"meleeKills"`
-	TeamKills              int           `json:"teamKills"`
-	OpeningKills           int           `json:"openingKills"`
-	OpeningDeaths          int           `json:"openingDeaths"`
-	Trades                 int           `json:"trades"`
-	OpeningKillTrades      int           `json:"openingKillTrades"`
-	OpeningDeathTrades     int           `json:"openingDeathTrades"`
-	Revives                int           `json:"revives"`
-	DistanceTravelled      int           `json:"distanceTravelled"`
-	WinLossRatio           float64       `json:"winLossRatio"`
-	KillDeathRatio         SummaryDetail `json:"killDeathRatio"`
+	// MatchesPlayed          int           `json:"matchesPlayed"`
+	// RoundsPlayed           int           `json:"roundsPlayed"`
+	// MinutesPlayed          int           `json:"minutesPlayed"`
+	// MatchesWon             int           `json:"matchesWon"`
+	// MatchesLost            int           `json:"matchesLost"`
+	// RoundsWon              int           `json:"roundsWon"`
+	// RoundsLost             int           `json:"roundsLost"`
+	// Kills                  int           `json:"kills"`
+	// Assists                int           `json:"assists"`
+	// Death                  int           `json:"death"`
+	// Headshots              int           `json:"headshots"`
+	// MeleeKills             int           `json:"meleeKills"`
+	// TeamKills              int           `json:"teamKills"`
+	OpeningKills       int `json:"openingKills"`
+	OpeningDeaths      int `json:"openingDeaths"`
+	Trades             int `json:"trades"`
+	OpeningKillTrades  int `json:"openingKillTrades"`
+	OpeningDeathTrades int `json:"openingDeathTrades"`
+	// Revives                int           `json:"revives"`
+	// DistanceTravelled      int           `json:"distanceTravelled"`
+	// WinLossRatio           float64       `json:"winLossRatio"`
+	// KillDeathRatio         SummaryDetail `json:"killDeathRatio"`
 	HeadshotAccuracy       SummaryDetail `json:"headshotAccuracy"`
 	KillsPerRound          SummaryDetail `json:"killsPerRound"`
 	RoundsWithAKill        SummaryDetail `json:"roundsWithAKill"`
