@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/cloudwego/hertz/pkg/app/client"
 	"github.com/cloudwego/hertz/pkg/protocol"
@@ -16,6 +17,7 @@ import (
 )
 
 func GetPlayerProfile(ctx context.Context, client client.Client, auth *auth.UbisoftSession, name, uuid, platform string) (*ubisoft.Profile, error) {
+
 	req := protocol.AcquireRequest()
 	res := protocol.AcquireResponse()
 	defer protocol.ReleaseRequest(req)
@@ -28,6 +30,10 @@ func GetPlayerProfile(ctx context.Context, client client.Client, auth *auth.Ubis
 	err := client.DoRedirects(ctx, req, res, 1)
 	if err != nil {
 		return nil, err
+	}
+
+	if res.StatusCode() != consts.StatusOK {
+		return nil, errors.New("ubisoft server profile response error (error code: #gpp1)")
 	}
 
 	var profile ubisoft.ProfileModel
@@ -59,6 +65,15 @@ func GetXpAndLevel(ctx context.Context, client client.Client, auth *auth.Ubisoft
 	err := client.DoRedirects(ctx, req, res, 1)
 	if err != nil {
 		return nil, err
+	}
+
+	//ubisoft returned no content
+	if res.StatusCode() == consts.StatusNoContent {
+		return nil, nil
+	}
+
+	if res.StatusCode() != consts.StatusOK {
+		return nil, fmt.Errorf("failed to receive ubisoft xp and level response %v", res.StatusCode())
 	}
 
 	var xpLevel ubisoft.XpAndLevel
@@ -128,6 +143,38 @@ func GetRankedOne(ctx context.Context, client client.Client, auth *auth.UbisoftS
 	return &output, nil
 }
 
+func GetLastSeen(ctx context.Context, client client.Client, auth *auth.UbisoftSession, uuid, platform string) (*time.Time, error) {
+	req := protocol.AcquireRequest()
+	res := protocol.AcquireResponse()
+	defer protocol.ReleaseRequest(req)
+	defer protocol.ReleaseResponse(res)
+
+	req.SetMethod(consts.MethodGet)
+	req.SetRequestURI(rankedTwoCurrentSeason(uuid))
+	requestHeaders(req, auth, false, false)
+
+	err := client.DoRedirects(ctx, req, res, 1)
+	if err != nil {
+		return nil, err
+	}
+
+	if res.StatusCode() != consts.StatusOK {
+		return nil, fmt.Errorf("failed to receive ubisoft last seen response %v", res.StatusCode())
+	}
+
+	var rankedJson ubisoft.RankedModel
+	de := json.NewDecoder(res.BodyStream()).Decode(&rankedJson)
+	if de != nil {
+		return nil, errors.New("error decoding response (error code: #rr11)")
+	}
+
+	if len(rankedJson.SeasonsPlayerSkillRecords) == 0 {
+		return nil, errors.New("no ranked seasons found")
+	}
+
+	return &rankedJson.SeasonsPlayerSkillRecords[0].RegionsPlayerSkillRecords[0].BoardsPlayerSkillRecords[0].Seasons[0].UpdateTime, nil
+}
+
 func GetRankedTwo(ctx context.Context, client client.Client, auth *auth.UbisoftSession, uuid, platform string) (*[]ubisoft.RankedTwoOutputModel, error) {
 	req := protocol.AcquireRequest()
 	res := protocol.AcquireResponse()
@@ -141,6 +188,10 @@ func GetRankedTwo(ctx context.Context, client client.Client, auth *auth.UbisoftS
 	err := client.DoRedirects(ctx, req, res, 1)
 	if err != nil {
 		return nil, err
+	}
+
+	if res.StatusCode() != consts.StatusOK {
+		return nil, fmt.Errorf("failed to receive ubisoft ranked 2.0 response %v", res.StatusCode())
 	}
 
 	var resJson ubisoft.RankedTwoModel
@@ -190,15 +241,13 @@ func GetWeapons(ctx context.Context, client client.Client, auth *auth.UbisoftSes
 		platform = "xplay"
 	}
 
-	platform = PlatformModernStats[platform]
-
 	req := protocol.AcquireRequest()
 	res := protocol.AcquireResponse()
 	defer protocol.ReleaseRequest(req)
 	defer protocol.ReleaseResponse(res)
 
 	req.SetMethod(consts.MethodGet)
-	req.SetRequestURI(weaponsUri(uuid, platform, -120, xplay))
+	req.SetRequestURI(weaponsUri(uuid, platform, xplay))
 	requestHeaders(req, auth, false, true)
 
 	err := client.DoRedirects(ctx, req, res, 1)
@@ -206,8 +255,13 @@ func GetWeapons(ctx context.Context, client client.Client, auth *auth.UbisoftSes
 		return nil, err
 	}
 
+	//ubisoft returned no content
+	if res.StatusCode() == consts.StatusNoContent {
+		return nil, nil
+	}
+
 	if res.StatusCode() != consts.StatusOK {
-		return nil, fmt.Errorf("failed to receive ubisoft response %v", res.StatusCode())
+		return nil, fmt.Errorf("failed to receive ubisoft weapons response %v", res.StatusCode())
 	}
 
 	var op map[string]interface{}
@@ -217,13 +271,19 @@ func GetWeapons(ctx context.Context, client client.Client, auth *auth.UbisoftSes
 	}
 
 	//dirty - find new solution
-	weapons := op["profileData"].(map[string]interface{})[uuid].(map[string]interface{})["platforms"].(map[string]interface{})[platform]
+	weapons := op["profileData"].(map[string]interface{})[uuid].(map[string]interface{})["platforms"].(map[string]interface{})[PlatformModernStats[platform]]
 
 	var result ubisoft.WeaponsOutputModel
 	a, b := utils.Transcode(weapons, &result)
 
-	if a != nil || b != nil {
+	//error encoding response
+	if a != nil {
 		return nil, errors.New("error decoding response (error code: #rw2)")
+	}
+
+	//ubisoft returned no data - handle error by returning nil
+	if b != nil {
+		return nil, nil
 	}
 
 	return &result.GameModes.Ranked.TeamRoles, nil
@@ -233,8 +293,6 @@ func GetMaps(ctx context.Context, client client.Client, auth *auth.UbisoftSessio
 	if xplay && platform != "uplay" {
 		platform = "xplay"
 	}
-
-	platform = PlatformModernStats[platform]
 
 	req := protocol.AcquireRequest()
 	res := protocol.AcquireResponse()
@@ -250,8 +308,13 @@ func GetMaps(ctx context.Context, client client.Client, auth *auth.UbisoftSessio
 		return nil, err
 	}
 
+	//ubisoft returned no content
+	if res.StatusCode() == consts.StatusNoContent {
+		return nil, nil
+	}
+
 	if res.StatusCode() != consts.StatusOK {
-		return nil, fmt.Errorf("failed to receive ubisoft response %v", res.StatusCode())
+		return nil, fmt.Errorf("failed to receive ubisoft maps response %v", res.StatusCode())
 	}
 
 	var op map[string]interface{}
@@ -261,13 +324,19 @@ func GetMaps(ctx context.Context, client client.Client, auth *auth.UbisoftSessio
 	}
 
 	//dirty - find new solution
-	maps := op["profileData"].(map[string]interface{})[uuid].(map[string]interface{})["platforms"].(map[string]interface{})[platform]
+	maps := op["profileData"].(map[string]interface{})[uuid].(map[string]interface{})["platforms"].(map[string]interface{})[PlatformModernStats[platform]]
 
 	var result ubisoft.MapsOutputModel
 	a, b := utils.Transcode(maps, &result)
 
-	if a != nil || b != nil {
-		return nil, errors.New("error decoding response (error code: #rm2)")
+	//error encoding response
+	if a != nil {
+		return nil, errors.New("error decoding response (error code: #rw2)")
+	}
+
+	//ubisoft returned no data - handle error by returning nil
+	if b != nil {
+		return nil, nil
 	}
 
 	return &result.GameModes.Ranked.TeamRoles, nil
@@ -277,8 +346,6 @@ func GetOperators(ctx context.Context, client client.Client, auth *auth.UbisoftS
 	if xplay && platform != "uplay" {
 		platform = "xplay"
 	}
-
-	platform = PlatformModernStats[platform]
 
 	req := protocol.AcquireRequest()
 	res := protocol.AcquireResponse()
@@ -294,8 +361,13 @@ func GetOperators(ctx context.Context, client client.Client, auth *auth.UbisoftS
 		return nil, err
 	}
 
+	//ubisoft returned no content
+	if res.StatusCode() == consts.StatusNoContent {
+		return nil, nil
+	}
+
 	if res.StatusCode() != consts.StatusOK {
-		return nil, fmt.Errorf("failed to receive ubisoft response %v", res.StatusCode())
+		return nil, fmt.Errorf("failed to receive ubisoft operators response %v", res.StatusCode())
 	}
 
 	var op map[string]interface{}
@@ -305,13 +377,19 @@ func GetOperators(ctx context.Context, client client.Client, auth *auth.UbisoftS
 	}
 
 	//dirty - find new solution
-	operators := op["profileData"].(map[string]interface{})[uuid].(map[string]interface{})["platforms"].(map[string]interface{})[platform]
+	operators := op["profileData"].(map[string]interface{})[uuid].(map[string]interface{})["platforms"].(map[string]interface{})[PlatformModernStats[platform]]
 
 	var result ubisoft.OperatorOutputModel
 	a, b := utils.Transcode(operators, &result)
 
-	if a != nil || b != nil {
+	//error encoding response
+	if a != nil {
 		return nil, errors.New("error decoding response (error code: #rw2)")
+	}
+
+	//ubisoft returned no data - handle error by returning nil
+	if b != nil {
+		return nil, nil
 	}
 
 	return &result.GameModes.Ranked.TeamRoles, nil
@@ -321,8 +399,6 @@ func GetTrends(ctx context.Context, client client.Client, auth *auth.UbisoftSess
 	if xplay && platform != "uplay" {
 		platform = "xplay"
 	}
-
-	platform = PlatformModernStats[platform]
 
 	req := protocol.AcquireRequest()
 	res := protocol.AcquireResponse()
@@ -338,8 +414,13 @@ func GetTrends(ctx context.Context, client client.Client, auth *auth.UbisoftSess
 		return nil, err
 	}
 
+	//ubisoft returned no content
+	if res.StatusCode() == consts.StatusNoContent {
+		return nil, nil
+	}
+
 	if res.StatusCode() != consts.StatusOK {
-		return nil, fmt.Errorf("failed to receive ubisoft response %v", res.StatusCode())
+		return nil, fmt.Errorf("failed to receive ubisoft trends response %v", res.StatusCode())
 	}
 
 	var op map[string]interface{}
@@ -349,7 +430,7 @@ func GetTrends(ctx context.Context, client client.Client, auth *auth.UbisoftSess
 	}
 
 	//dirty - find new solution
-	trends := op["profileData"].(map[string]interface{})[uuid].(map[string]interface{})["platforms"].(map[string]interface{})[platform].(map[string]interface{})["gameModes"].(map[string]interface{})["ranked"].(map[string]interface{})["teamRoles"].(map[string]interface{})["all"].([]interface{})
+	trends := op["profileData"].(map[string]interface{})[uuid].(map[string]interface{})["platforms"].(map[string]interface{})[PlatformModernStats[platform]].(map[string]interface{})["gameModes"].(map[string]interface{})["ranked"].(map[string]interface{})["teamRoles"].(map[string]interface{})["all"].([]interface{})
 
 	if len(trends) == 0 {
 		return nil, errors.New("failed to receive ubisoft response")
@@ -394,8 +475,6 @@ func GetSummary(ctx context.Context, client client.Client, auth *auth.UbisoftSes
 		platform = "xplay"
 	}
 
-	platform = PlatformModernStats[platform]
-
 	req := protocol.AcquireRequest()
 	res := protocol.AcquireResponse()
 	defer protocol.ReleaseRequest(req)
@@ -410,8 +489,13 @@ func GetSummary(ctx context.Context, client client.Client, auth *auth.UbisoftSes
 		return nil, err
 	}
 
+	//ubisoft returned no content
+	if res.StatusCode() == consts.StatusNoContent {
+		return nil, nil
+	}
+
 	if res.StatusCode() != consts.StatusOK {
-		return nil, fmt.Errorf("failed to receive ubisoft response %v", res.StatusCode())
+		return nil, fmt.Errorf("failed to receive ubisoft summaries response %v", res.StatusCode())
 	}
 
 	var op map[string]interface{}
@@ -421,13 +505,19 @@ func GetSummary(ctx context.Context, client client.Client, auth *auth.UbisoftSes
 	}
 
 	//dirty - find new solution
-	summary := op["profileData"].(map[string]interface{})[uuid].(map[string]interface{})["platforms"].(map[string]interface{})[platform]
+	summary := op["profileData"].(map[string]interface{})[uuid].(map[string]interface{})["platforms"].(map[string]interface{})[PlatformModernStats[platform]]
 
 	var result ubisoft.SummaryOutputModel
 	a, b := utils.Transcode(summary, &result)
 
-	if a != nil || b != nil {
-		return nil, errors.New("error decoding response (error code: #rs2)")
+	//error encoding response
+	if a != nil {
+		return nil, errors.New("error decoding response (error code: #rw2)")
+	}
+
+	//ubisoft returned no data - handle error by returning nil
+	if b != nil {
+		return nil, nil
 	}
 
 	return &result.GameModes.Ranked.TeamRoles, nil
