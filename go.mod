@@ -6,7 +6,6 @@ require (
 	github.com/cloudwego/hertz v0.6.0
 	github.com/go-redis/cache/v8 v8.4.4
 	github.com/go-redis/redis/v8 v8.11.5
-	github.com/hertz-contrib/cors v0.0.0-20230307061136-1fe747ea6a2a
 	github.com/meilisearch/meilisearch-go v0.23.0
 	github.com/rabbitmq/amqp091-go v1.7.0
 	golang.org/x/sync v0.1.0
