@@ -32,5 +32,4 @@ func requestHeaders(req *protocol.Request, auth *auth.UbisoftSession, new, moder
 	req.Header.Set("Ubi-AppId", ai)
 	req.Header.Set("expiration", exp)
 	req.SetAuthSchemeToken("Ubi_v1", av)
-
 }
