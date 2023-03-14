@@ -6,9 +6,7 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/client"
-	"github.com/cloudwego/hertz/pkg/app/server/binding"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
-	"github.com/cloudwego/hertz/pkg/route/param"
 	"github.com/eliassebastian/r6index-api/cmd/api/models"
 	"github.com/eliassebastian/r6index-api/cmd/api/responses"
 	"github.com/eliassebastian/r6index-api/cmd/api/validation"
@@ -47,9 +45,7 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 
 	startTime := time.Now()
 	var req requestParams
-
-	//validate request params
-	err := binding.BindAndValidate(&c.Request, &req, param.Params{})
+	err := c.BindAndValidate(&req)
 	if err != nil {
 		c.JSON(consts.StatusBadRequest, responses.Error(time.Now(), err.Error()))
 		return
@@ -204,6 +200,5 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 	// 	return
 	// }
 
-	//playerFound
-	c.JSON(consts.StatusAccepted, responses.Success(startTime, output))
+	c.JSON(consts.StatusAccepted, responses.Success(startTime, playerFound))
 }
