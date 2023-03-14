@@ -22,26 +22,29 @@ type ProfileCache struct {
 }
 
 type PlayerFound struct {
-	Id string `json:"profileId"`
+	Name string `json:"name"`
+	Id   string `json:"profileId"`
 }
 
 type Player struct {
 	//Id         string                          `json:"id"`
-	ProfileId  string                          `json:"profileId"`
-	UserId     string                          `json:"userId"`
-	Platform   string                          `json:"platform"`
-	Nickname   string                          `json:"nickname"`
-	LastUpdate int64                           `json:"lastUpdate"`
-	Aliases    *[]Alias                        `json:"aliases"`
-	Xp         int32                           `json:"xp"`
-	Level      int16                           `json:"level"`
-	Summary    *ubisoft.SummaryTeamRoles       `json:"summary"`
-	RankedOne  *[]ubisoft.RankedOutputModel    `json:"rankedOne"`
-	RankedTwo  *[]ubisoft.RankedTwoOutputModel `json:"rankedTwo"`
-	Weapons    *ubisoft.WeaponTeamRoles        `json:"weapons"`
-	Maps       *ubisoft.MapsTeamRoles          `json:"maps"`
-	Operators  *ubisoft.OperatorTeamRoles      `json:"operators"`
-	Trends     *ubisoft.TrendOutput            `json:"trends"`
+	ProfileId  string                    `json:"profileId"`
+	UserId     string                    `json:"userId"`
+	Platform   string                    `json:"platform"`
+	Nickname   string                    `json:"nickname"`
+	FirstIndex int64                     `json:"firstIndex"`
+	LastSeeen  *time.Time                `json:"lastSeen"`
+	LastUpdate int64                     `json:"lastUpdate"`
+	Aliases    *[]Alias                  `json:"aliases"`
+	Xp         int32                     `json:"xp"`
+	Level      int16                     `json:"level"`
+	Summary    *ubisoft.SummaryTeamRoles `json:"summary"`
+	//RankedOne  *[]ubisoft.RankedOutputModel    `json:"rankedOne"`
+	RankedTwo *[]ubisoft.RankedTwoOutputModel `json:"ranked"`
+	Weapons   *ubisoft.WeaponTeamRoles        `json:"weapons"`
+	Maps      *ubisoft.MapsTeamRoles          `json:"maps"`
+	Operators *ubisoft.OperatorTeamRoles      `json:"operators"`
+	Trends    *ubisoft.TrendOutput            `json:"trends"`
 }
 
 type PlayerUpdate struct {
