@@ -1,5 +1,7 @@
 package ubisoft
 
+import "time"
+
 type RankedOutputModel struct {
 	SeasonID  int16          `json:"season_id"`
 	SeasonTag string         `json:"season_tag"`
@@ -25,18 +27,19 @@ type RankedSeasons struct {
 }
 
 type RankedSeason struct {
-	Season      int16   `json:"season"`
-	Rank        int16   `json:"rank"`
-	MaxRank     int16   `json:"max_rank"`
-	MaxMmr      float32 `json:"max_mmr"`
-	Mmr         float32 `json:"mmr"`
-	Deaths      int     `json:"deaths"`
-	Kills       int     `json:"kills"`
-	Abandons    int     `json:"abandons"`
-	Wins        int     `json:"wins"`
-	Losses      int     `json:"losses"`
-	Leaderboard int     `json:"top_rank_position"`
-	Region      string  `json:"region"`
-	MaxRankText string  `json:"max_rank_text"`
-	RankText    string  `json:"rank_text"`
+	Season      int16     `json:"season"`
+	Rank        int16     `json:"rank"`
+	MaxRank     int16     `json:"max_rank"`
+	MaxMmr      float32   `json:"max_mmr"`
+	Mmr         float32   `json:"mmr"`
+	Deaths      int       `json:"deaths"`
+	Kills       int       `json:"kills"`
+	Abandons    int       `json:"abandons"`
+	Wins        int       `json:"wins"`
+	Losses      int       `json:"losses"`
+	UpdateTime  time.Time `json:"update_time"`
+	Leaderboard int       `json:"top_rank_position"`
+	Region      string    `json:"region"`
+	MaxRankText string    `json:"max_rank_text"`
+	RankText    string    `json:"rank_text"`
 }
