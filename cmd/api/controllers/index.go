@@ -112,7 +112,7 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 			return err
 		}
 
-		output.LastSeeen = s
+		output.LastSeen = s
 
 		return err
 	})

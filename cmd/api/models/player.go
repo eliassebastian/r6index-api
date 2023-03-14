@@ -33,7 +33,7 @@ type Player struct {
 	Platform   string                    `json:"platform"`
 	Nickname   string                    `json:"nickname"`
 	FirstIndex int64                     `json:"firstIndex"`
-	LastSeeen  *time.Time                `json:"lastSeen"`
+	LastSeen   *time.Time                `json:"lastSeen"`
 	LastUpdate int64                     `json:"lastUpdate"`
 	Aliases    *[]Alias                  `json:"aliases"`
 	Xp         int32                     `json:"xp"`
