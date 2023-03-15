@@ -22,8 +22,9 @@ type ProfileCache struct {
 }
 
 type PlayerFound struct {
-	Name string `json:"name"`
-	Id   string `json:"profileId"`
+	Message string `json:"message"`
+	Name    string `json:"name"`
+	Id      string `json:"profileId"`
 }
 
 type Player struct {
@@ -48,17 +49,18 @@ type Player struct {
 }
 
 type PlayerUpdate struct {
-	ProfileId  string                          `json:"profileId"`
-	Nickname   string                          `json:"nickname,omitempty"`
-	LastUpdate int64                           `json:"lastUpdate"`
-	Aliases    *[]Alias                        `json:"aliases,omitempty"`
-	Xp         int32                           `json:"xp"`
-	Level      int16                           `json:"level"`
-	Summary    *ubisoft.SummaryTeamRoles       `json:"summary,omitempty"`
-	RankedOne  *[]ubisoft.RankedOutputModel    `json:"rankedOne,omitempty"`
-	RankedTwo  *[]ubisoft.RankedTwoOutputModel `json:"rankedTwo,omitempty"`
-	Weapons    *ubisoft.WeaponTeamRoles        `json:"weapons,omitempty"`
-	Maps       *ubisoft.MapsTeamRoles          `json:"maps,omitempty"`
-	Operators  *ubisoft.OperatorTeamRoles      `json:"operators,omitempty"`
-	Trends     *ubisoft.TrendOutput            `json:"trends,omitempty"`
+	ProfileId  string                    `json:"profileId"`
+	Nickname   string                    `json:"nickname,omitempty"`
+	LastUpdate int64                     `json:"lastUpdate"`
+	LastSeen   *time.Time                `json:"lastSeen"`
+	Aliases    *[]Alias                  `json:"aliases,omitempty"`
+	Xp         int32                     `json:"xp"`
+	Level      int16                     `json:"level"`
+	Summary    *ubisoft.SummaryTeamRoles `json:"summary,omitempty"`
+	//RankedOne  *[]ubisoft.RankedOutputModel    `json:"rankedOne,omitempty"`
+	RankedTwo *[]ubisoft.RankedTwoOutputModel `json:"ranked,omitempty"`
+	Weapons   *ubisoft.WeaponTeamRoles        `json:"weapons,omitempty"`
+	Maps      *ubisoft.MapsTeamRoles          `json:"maps,omitempty"`
+	Operators *ubisoft.OperatorTeamRoles      `json:"operators,omitempty"`
+	Trends    *ubisoft.TrendOutput            `json:"trends,omitempty"`
 }
