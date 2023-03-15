@@ -13,6 +13,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/network/standard"
 	"github.com/cloudwego/hertz/pkg/protocol"
+	"github.com/eliassebastian/r6index-api/cmd/api/middleware"
 	"github.com/eliassebastian/r6index-api/pkg/auth"
 	"github.com/eliassebastian/r6index-api/pkg/cache"
 	"github.com/eliassebastian/r6index-api/pkg/meili"
@@ -34,6 +35,13 @@ func main() {
 		server.WithIdleTimeout(30*time.Second),
 		server.WithExitWaitTime(5*time.Second),
 	)
+
+	origin := "*"
+	if utils.GetEnv("ENV", "dev") == "prod" {
+		origin = "https://r6index.app"
+	}
+
+	h.Use(middleware.Cors(origin))
 
 	c, err := client.NewClient(
 		client.WithResponseBodyStream(true),
