@@ -15,7 +15,7 @@ type MeiliSearchStore struct {
 func New() (*MeiliSearchStore, error) {
 	client := meilisearch.NewClient(meilisearch.ClientConfig{
 		Host:   utils.GetEnv("MEILI_URL", "http://127.0.0.1:7700"),
-		APIKey: utils.GetEnv("MEILI_API_KEY", ""),
+		APIKey: utils.GetEnv("MEILI_API_KEY", "qXPkGJcYpUQuGHUncsPpHxGsqwGygvXQUhUtzTATCbuBaHeYufTWtLddeYMHttFN"),
 	})
 
 	_, err := client.GetVersion()
@@ -46,17 +46,17 @@ func (m *MeiliSearchStore) CreateIndex() error {
 		PrimaryKey: "profileId",
 	})
 
-	_, b := m.DB.CreateIndex(&meilisearch.IndexConfig{
-		Uid:        "psn",
-		PrimaryKey: "profileId",
-	})
+	// _, b := m.DB.CreateIndex(&meilisearch.IndexConfig{
+	// 	Uid:        "psn",
+	// 	PrimaryKey: "profileId",
+	// })
 
-	_, c := m.DB.CreateIndex(&meilisearch.IndexConfig{
-		Uid:        "xbl",
-		PrimaryKey: "profileId",
-	})
+	// _, c := m.DB.CreateIndex(&meilisearch.IndexConfig{
+	// 	Uid:        "xbl",
+	// 	PrimaryKey: "profileId",
+	// })
 
-	if a != nil || b != nil || c != nil {
+	if a != nil {
 		return a
 	}
 
@@ -67,8 +67,8 @@ func (m *MeiliSearchStore) CreateIndex() error {
 func (m *MeiliSearchStore) CreateKey() error {
 	_, e := m.DB.CreateKey(&meilisearch.Key{
 		Description: "General Search API Key",
-		Actions:     []string{"search", "documents.add", "documents.get"},
-		Indexes:     []string{"uplay", "xbl", "psn"},
+		Actions:     []string{"search", "documents.add", "documents.get", "version"},
+		Indexes:     []string{"uplay"},
 		Name:        "Search API Key",
 	})
 
@@ -96,5 +96,5 @@ func (m *MeiliSearchStore) FetchPlayer(platform, uuid string, output *models.Pla
 
 // Check whether player uuid exists in database
 func (m *MeiliSearchStore) FindPlayer(platform, uuid string, output *models.PlayerFound) error {
-	return m.DB.Index(platform).GetDocument(uuid, &meilisearch.DocumentQuery{Fields: []string{"profileId"}}, output)
+	return m.DB.Index(platform).GetDocument(uuid, &meilisearch.DocumentQuery{Fields: []string{"profileId", "nickname"}}, output)
 }
