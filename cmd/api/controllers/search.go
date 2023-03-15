@@ -22,8 +22,8 @@ func NewSearchController(db *meili.MeiliSearchStore) *SearchController {
 }
 
 func (sc *SearchController) RequestHandler(ctx context.Context, c *app.RequestContext) {
-	// ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
-	// defer cancel()
+	_, cancel := context.WithTimeout(ctx, 15*time.Second)
+	defer cancel()
 
 	startTime := time.Now()
 	platform := c.Query("p")
