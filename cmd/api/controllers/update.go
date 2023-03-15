@@ -33,26 +33,35 @@ func NewUpdateController(a *auth.AuthStore, c *client.Client, cs *cache.CacheSto
 	}
 }
 
+type updateRequestParams struct {
+	Platform string `json:"platform"`
+	Id       string `json:"id"`
+}
+
 func (uc *UpdateController) RequestHandler(ctx context.Context, c *app.RequestContext) {
 	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 
 	startTime := time.Now()
-	platform := c.PostForm("platform")
-	uuid := c.PostForm("id")
+	var req updateRequestParams
+	err := c.BindAndValidate(&req)
+	if err != nil {
+		c.JSON(consts.StatusBadRequest, responses.Error(time.Now(), err.Error()))
+		return
+	}
 
-	if !utils.IsValidPlatform(platform) {
+	if !utils.IsValidPlatform(req.Platform) {
 		c.JSON(consts.StatusBadRequest, responses.Error(startTime, "invalid platform provided"))
 		return
 	}
 
-	if !utils.IsValidUUID(uuid) {
+	if !utils.IsValidUUID(req.Id) {
 		c.JSON(consts.StatusBadRequest, responses.Error(startTime, "invalid player uuid provided"))
 		return
 	}
 
 	profileCache := new(models.ProfileCache)
-	err := uc.cache.GetCache(ctx, uuid, profileCache)
+	err = uc.cache.GetCache(ctx, req.Id, profileCache)
 	if err != nil {
 		c.JSON(consts.StatusBadRequest, responses.Error(startTime, "internal cache error"))
 		return
@@ -64,7 +73,7 @@ func (uc *UpdateController) RequestHandler(ctx context.Context, c *app.RequestCo
 	}
 
 	us := uc.auth.Read()
-	profile, pe := ubisoft.GetPlayerProfile(ctx, *uc.client, us, "", uuid, platform)
+	profile, pe := ubisoft.GetPlayerProfile(ctx, *uc.client, us, "", req.Id, req.Platform)
 	if pe != nil {
 		c.JSON(consts.StatusBadRequest, responses.Error(startTime, "ubisoft response error"))
 		return
@@ -85,7 +94,7 @@ func (uc *UpdateController) RequestHandler(ctx context.Context, c *app.RequestCo
 	group, ctx := errgroup.WithContext(ctx)
 
 	group.Go(func() error {
-		xp, err := ubisoft.GetXpAndLevel(ctx, *uc.client, us, profile.ProfileID, platform)
+		xp, err := ubisoft.GetXpAndLevel(ctx, *uc.client, us, profile.ProfileID, req.Platform)
 
 		if err != nil {
 			return err
@@ -98,7 +107,7 @@ func (uc *UpdateController) RequestHandler(ctx context.Context, c *app.RequestCo
 	})
 
 	group.Go(func() error {
-		s, err := ubisoft.GetRankedOne(ctx, *uc.client, us, profile.ProfileID, platform)
+		s, err := ubisoft.GetRankedOne(ctx, *uc.client, us, profile.ProfileID, req.Platform)
 
 		if err != nil {
 			return err
@@ -110,7 +119,7 @@ func (uc *UpdateController) RequestHandler(ctx context.Context, c *app.RequestCo
 	})
 
 	group.Go(func() error {
-		s, err := ubisoft.GetRankedTwo(ctx, *uc.client, us, profile.UserID, platform)
+		s, err := ubisoft.GetRankedTwo(ctx, *uc.client, us, profile.UserID, req.Platform)
 
 		if err != nil {
 			return err
@@ -122,7 +131,7 @@ func (uc *UpdateController) RequestHandler(ctx context.Context, c *app.RequestCo
 	})
 
 	group.Go(func() error {
-		w, err := ubisoft.GetWeapons(ctx, *uc.client, us, profile.UserID, platform, true)
+		w, err := ubisoft.GetWeapons(ctx, *uc.client, us, profile.UserID, req.Platform, true)
 
 		if err != nil {
 			return err
@@ -134,7 +143,7 @@ func (uc *UpdateController) RequestHandler(ctx context.Context, c *app.RequestCo
 	})
 
 	group.Go(func() error {
-		w, err := ubisoft.GetMaps(ctx, *uc.client, us, profile.UserID, platform, true)
+		w, err := ubisoft.GetMaps(ctx, *uc.client, us, profile.UserID, req.Platform, true)
 
 		if err != nil {
 			return err
@@ -146,7 +155,7 @@ func (uc *UpdateController) RequestHandler(ctx context.Context, c *app.RequestCo
 	})
 
 	group.Go(func() error {
-		w, err := ubisoft.GetOperators(ctx, *uc.client, us, profile.UserID, platform, true)
+		w, err := ubisoft.GetOperators(ctx, *uc.client, us, profile.UserID, req.Platform, true)
 
 		if err != nil {
 			return err
@@ -158,7 +167,7 @@ func (uc *UpdateController) RequestHandler(ctx context.Context, c *app.RequestCo
 	})
 
 	group.Go(func() error {
-		w, err := ubisoft.GetTrends(ctx, *uc.client, us, profile.UserID, platform, true)
+		w, err := ubisoft.GetTrends(ctx, *uc.client, us, profile.UserID, req.Platform, true)
 
 		if err != nil {
 			return err
@@ -170,7 +179,7 @@ func (uc *UpdateController) RequestHandler(ctx context.Context, c *app.RequestCo
 	})
 
 	group.Go(func() error {
-		w, err := ubisoft.GetSummary(ctx, *uc.client, us, profile.UserID, platform, true)
+		w, err := ubisoft.GetSummary(ctx, *uc.client, us, profile.UserID, req.Platform, true)
 
 		if err != nil {
 			return err
@@ -188,7 +197,7 @@ func (uc *UpdateController) RequestHandler(ctx context.Context, c *app.RequestCo
 
 	output.LastUpdate = startTime.UTC().Unix()
 
-	_, de := uc.db.DB.Index(platform).UpdateDocuments(output)
+	_, de := uc.db.DB.Index(req.Platform).UpdateDocuments(output)
 	if de != nil {
 		c.JSON(consts.StatusBadRequest, responses.Error(startTime, "internal error (db1)"))
 		return
