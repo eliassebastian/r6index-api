@@ -60,6 +60,7 @@ func (uc *UpdateController) RequestHandler(ctx context.Context, c *app.RequestCo
 		return
 	}
 
+	// Check if the player exists in cache
 	profileCache := new(models.ProfileCache)
 	err = uc.cache.GetCache(ctx, req.Id, profileCache)
 	if err != nil {
@@ -67,11 +68,13 @@ func (uc *UpdateController) RequestHandler(ctx context.Context, c *app.RequestCo
 		return
 	}
 
+	// Check if the player has updated their profile in the last hour
 	if !(startTime.UTC().Sub(time.Unix(profileCache.LastUpdate, 0)) > 1*time.Hour) {
 		c.JSON(consts.StatusBadRequest, responses.Error(startTime, "last update occurred too soon"))
 		return
 	}
 
+	// Get the player's basic uptodate profile from ubisoft
 	us := uc.auth.Read()
 	profile, pe := ubisoft.GetPlayerProfile(ctx, *uc.client, us, "", req.Id, req.Platform)
 	if pe != nil {
@@ -83,6 +86,7 @@ func (uc *UpdateController) RequestHandler(ctx context.Context, c *app.RequestCo
 		ProfileId: profile.ProfileID,
 	}
 
+	// Check if the player has changed their name
 	aliases := *profileCache.Aliases
 	lastAlias := aliases[len(aliases)-1]
 	if lastAlias.Name != profile.NameOnPlatform && startTime.UTC() != lastAlias.Date {
