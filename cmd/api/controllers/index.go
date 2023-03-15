@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/cloudwego/hertz/pkg/app"
@@ -69,7 +70,8 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 	pfe := ic.db.FindPlayer(req.Platform, profile.ProfileID, &playerFound)
 	//player found
 	if pfe == nil {
-		c.JSON(consts.StatusOK, responses.Success(startTime, &playerFound))
+		playerFound.Message = fmt.Sprintf("%s is already indexed. Redirecting...", playerFound.Name)
+		c.JSON(consts.StatusOK, responses.Success(startTime, playerFound))
 		return
 	}
 
@@ -200,5 +202,6 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 	// 	return
 	// }
 
+	playerFound.Message = fmt.Sprintf("%s successfully found and indexed. Redirecting...", playerFound.Name)
 	c.JSON(consts.StatusAccepted, responses.Success(startTime, playerFound))
 }
