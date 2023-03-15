@@ -196,11 +196,11 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 		return
 	}
 
-	// _, de := ic.db.DB.Index(platform).UpdateDocuments(output)
-	// if de != nil {
-	// 	c.JSON(consts.StatusBadRequest, responses.Error(startTime, "internal error (db1)"))
-	// 	return
-	// }
+	_, de := ic.db.DB.Index(req.Platform).UpdateDocuments(output)
+	if de != nil {
+		c.JSON(consts.StatusBadRequest, responses.Error(startTime, "internal error (db1)"))
+		return
+	}
 
 	playerFound.Message = fmt.Sprintf("%s successfully found and indexed. Redirecting...", playerFound.Nickname)
 	c.JSON(consts.StatusAccepted, responses.Success(startTime, playerFound))
