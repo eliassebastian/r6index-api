@@ -22,9 +22,9 @@ type ProfileCache struct {
 }
 
 type PlayerFound struct {
-	Message string `json:"message"`
-	Name    string `json:"name"`
-	Id      string `json:"profileId"`
+	Message  string `json:"message"`
+	Nickname string `json:"nickname"`
+	Id       string `json:"profileId"`
 }
 
 type Player struct {

@@ -70,13 +70,13 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 	pfe := ic.db.FindPlayer(req.Platform, profile.ProfileID, &playerFound)
 	//player found
 	if pfe == nil {
-		playerFound.Message = fmt.Sprintf("%s is already indexed. Redirecting...", playerFound.Name)
+		playerFound.Message = fmt.Sprintf("%s is already indexed. Redirecting...", playerFound.Nickname)
 		c.JSON(consts.StatusOK, responses.Success(startTime, playerFound))
 		return
 	}
 
 	playerFound.Id = profile.ProfileID
-	playerFound.Name = profile.NameOnPlatform
+	playerFound.Nickname = profile.NameOnPlatform
 
 	output := &models.Player{
 		//Id:         profile.ProfileID,
@@ -202,6 +202,6 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 	// 	return
 	// }
 
-	playerFound.Message = fmt.Sprintf("%s successfully found and indexed. Redirecting...", playerFound.Name)
+	playerFound.Message = fmt.Sprintf("%s successfully found and indexed. Redirecting...", playerFound.Nickname)
 	c.JSON(consts.StatusAccepted, responses.Success(startTime, playerFound))
 }
