@@ -107,16 +107,28 @@ func (uc *UpdateController) RequestHandler(ctx context.Context, c *app.RequestCo
 	})
 
 	group.Go(func() error {
-		s, err := ubisoft.GetRankedOne(ctx, *uc.client, us, profile.ProfileID, req.Platform)
+		s, err := ubisoft.GetLastSeen(ctx, *uc.client, us, profile.ProfileID, req.Platform)
 
 		if err != nil {
 			return err
 		}
 
-		output.RankedOne = s
+		output.LastSeen = s
 
 		return err
 	})
+
+	// group.Go(func() error {
+	// 	s, err := ubisoft.GetRankedOne(ctx, *uc.client, us, profile.ProfileID, req.Platform)
+
+	// 	if err != nil {
+	// 		return err
+	// 	}
+
+	// 	output.RankedOne = s
+
+	// 	return err
+	// })
 
 	group.Go(func() error {
 		s, err := ubisoft.GetRankedTwo(ctx, *uc.client, us, profile.UserID, req.Platform)
