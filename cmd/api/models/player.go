@@ -34,7 +34,7 @@ type Player struct {
 	Platform   string                    `json:"platform"`
 	Nickname   string                    `json:"nickname"`
 	FirstIndex int64                     `json:"firstIndex"`
-	LastSeen   *time.Time                `json:"lastSeen"`
+	LastSeen   int64                     `json:"lastSeen"`
 	LastUpdate int64                     `json:"lastUpdate"`
 	Aliases    *[]Alias                  `json:"aliases"`
 	Xp         int32                     `json:"xp"`
@@ -52,7 +52,7 @@ type PlayerUpdate struct {
 	ProfileId  string                    `json:"profileId"`
 	Nickname   string                    `json:"nickname,omitempty"`
 	LastUpdate int64                     `json:"lastUpdate"`
-	LastSeen   *time.Time                `json:"lastSeen"`
+	LastSeen   int64                     `json:"lastSeen"`
 	Aliases    *[]Alias                  `json:"aliases,omitempty"`
 	Xp         int32                     `json:"xp"`
 	Level      int16                     `json:"level"`
