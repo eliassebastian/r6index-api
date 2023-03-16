@@ -1,19 +1,21 @@
 package ubisoft
 
 type RankedTwoOutputModel struct {
-	MaxRank         int16  `json:"max_rank"`
-	SeasonID        int16  `json:"season"`
-	Rank            int16  `json:"rank"`
-	MaxRankPoints   int    `json:"max_rank_points"`
-	RankPoints      int    `json:"rank_points"`
-	TopRankPosition int    `json:"top_rank_position"`
-	Abandons        int    `json:"abandons"`
-	Losses          int    `json:"losses"`
-	Wins            int    `json:"wins"`
-	Deaths          int    `json:"deaths"`
-	Kills           int    `json:"kills"`
-	RankText        string `json:"rank_text"`
-	MaxRankText     string `json:"max_rank_text"`
+	MaxRank         int16   `json:"max_rank"`
+	SeasonID        int16   `json:"season"`
+	Rank            int16   `json:"rank"`
+	MaxRankPoints   int     `json:"max_rank_points"`
+	RankPoints      int     `json:"rank_points"`
+	TopRankPosition int     `json:"top_rank_position"`
+	Abandons        int     `json:"abandons"`
+	Losses          int     `json:"losses"`
+	Wins            int     `json:"wins"`
+	Deaths          int     `json:"deaths"`
+	Kills           int     `json:"kills"`
+	RankText        string  `json:"rank_text"`
+	MaxRankText     string  `json:"max_rank_text"`
+	KillDeathRatio  float32 `json:"kill_death_ratio"`
+	WinLoseRatio    float32 `json:"win_lose_ratio"`
 }
 
 type RankedTwoModel struct {
