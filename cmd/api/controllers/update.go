@@ -117,8 +117,7 @@ func (uc *UpdateController) RequestHandler(ctx context.Context, c *app.RequestCo
 			return err
 		}
 
-		output.LastSeen = s
-
+		output.LastSeen = s.Unix()
 		return err
 	})
 
@@ -142,7 +141,6 @@ func (uc *UpdateController) RequestHandler(ctx context.Context, c *app.RequestCo
 		}
 
 		output.RankedTwo = s
-
 		return err
 	})
 
@@ -154,7 +152,6 @@ func (uc *UpdateController) RequestHandler(ctx context.Context, c *app.RequestCo
 		}
 
 		output.Weapons = w
-
 		return err
 	})
 
@@ -166,7 +163,6 @@ func (uc *UpdateController) RequestHandler(ctx context.Context, c *app.RequestCo
 		}
 
 		output.Maps = w
-
 		return err
 	})
 
@@ -178,7 +174,6 @@ func (uc *UpdateController) RequestHandler(ctx context.Context, c *app.RequestCo
 		}
 
 		output.Operators = w
-
 		return err
 	})
 
@@ -190,7 +185,6 @@ func (uc *UpdateController) RequestHandler(ctx context.Context, c *app.RequestCo
 		}
 
 		output.Trends = w
-
 		return err
 	})
 
@@ -202,7 +196,6 @@ func (uc *UpdateController) RequestHandler(ctx context.Context, c *app.RequestCo
 		}
 
 		output.Summary = w
-
 		return err
 	})
 

@@ -103,7 +103,6 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 
 		output.Xp = xp.Xp
 		output.Level = xp.Level
-
 		return err
 	})
 
@@ -114,8 +113,7 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 			return err
 		}
 
-		output.LastSeen = s
-
+		output.LastSeen = s.Unix()
 		return err
 	})
 
@@ -127,7 +125,6 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 		}
 
 		output.RankedTwo = s
-
 		return err
 	})
 
@@ -139,7 +136,6 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 		}
 
 		output.Weapons = w
-
 		return err
 	})
 
@@ -151,7 +147,6 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 		}
 
 		output.Maps = w
-
 		return err
 	})
 
@@ -163,7 +158,6 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 		}
 
 		output.Operators = w
-
 		return err
 	})
 
@@ -175,7 +169,6 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 		}
 
 		output.Trends = w
-
 		return err
 	})
 
@@ -187,7 +180,6 @@ func (ic *IndexController) RequestHandler(ctx context.Context, c *app.RequestCon
 		}
 
 		output.Summary = w
-
 		return err
 	})
 
