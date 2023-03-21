@@ -230,6 +230,8 @@ func GetRankedTwo(ctx context.Context, client client.Client, auth *auth.UbisoftS
 			Kills:           season.SeasonStatistics.Kills,
 			MaxRankText:     rankInfo[season.Profile.MaxRank].Name,
 			RankText:        rankInfo[season.Profile.Rank].Name,
+			WinLoseRatio:    float32(season.SeasonStatistics.MatchOutcomes.Wins) / float32(season.SeasonStatistics.MatchOutcomes.Losses),
+			KillDeathRatio:  float32(season.SeasonStatistics.Kills) / float32(season.SeasonStatistics.Deaths),
 		})
 	}
 
