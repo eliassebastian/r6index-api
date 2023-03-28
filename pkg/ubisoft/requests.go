@@ -175,7 +175,7 @@ func GetLastSeen(ctx context.Context, client client.Client, auth *auth.UbisoftSe
 	return &rankedJson.SeasonsPlayerSkillRecords[0].RegionsPlayerSkillRecords[0].BoardsPlayerSkillRecords[0].Seasons[0].UpdateTime, nil
 }
 
-func GetRankedTwo(ctx context.Context, client client.Client, auth *auth.UbisoftSession, uuid, platform string) (*[]ubisoft.RankedTwoOutputModel, error) {
+func GetRankedTwo(ctx context.Context, client client.Client, auth *auth.UbisoftSession, uuid, platform string) (*ubisoft.RankedTwoOutputModel, error) {
 	req := protocol.AcquireRequest()
 	res := protocol.AcquireResponse()
 	defer protocol.ReleaseRequest(req)
@@ -232,13 +232,14 @@ func GetRankedTwo(ctx context.Context, client client.Client, auth *auth.UbisoftS
 			RankText:        rankInfo[season.Profile.Rank].Name,
 			WinLoseRatio:    float32(season.SeasonStatistics.MatchOutcomes.Wins) / float32(season.SeasonStatistics.MatchOutcomes.Losses),
 			KillDeathRatio:  float32(season.SeasonStatistics.Kills) / float32(season.SeasonStatistics.Deaths),
+			SeasonName:      seasons[season.Profile.SeasonID].Name,
 		})
 	}
 
-	return &output, nil
+	return &output[0], nil
 }
 
-func GetWeapons(ctx context.Context, client client.Client, auth *auth.UbisoftSession, uuid, platform string, xplay bool) (*ubisoft.WeaponTeamRoles, error) {
+func GetWeapons(ctx context.Context, client client.Client, auth *auth.UbisoftSession, uuid, platform string, xplay bool) (*[]ubisoft.Weapon, error) {
 	if xplay && platform != "uplay" {
 		platform = "xplay"
 	}
@@ -288,10 +289,28 @@ func GetWeapons(ctx context.Context, client client.Client, auth *auth.UbisoftSes
 		return nil, nil
 	}
 
-	return &result.GameModes.Ranked.TeamRoles, nil
+	//result.GameModes.Ranked.TeamRoles.All.WeaponSlots.
+	var output []ubisoft.Weapon
+	for _, wt := range result.GameModes.Ranked.TeamRoles.All.WeaponSlots.SecondaryWeapons.WeaponTypes {
+		for _, w := range wt.Weapons {
+			w.WeaponType = wt.WeaponType
+			w.WeaponCategory = "secondary"
+			output = append(output, w)
+		}
+	}
+
+	for _, wt := range result.GameModes.Ranked.TeamRoles.All.WeaponSlots.PrimaryWeapons.WeaponTypes {
+		for _, w := range wt.Weapons {
+			w.WeaponType = wt.WeaponType
+			w.WeaponCategory = "primary"
+			output = append(output, w)
+		}
+	}
+
+	return &output, nil
 }
 
-func GetMaps(ctx context.Context, client client.Client, auth *auth.UbisoftSession, uuid, platform string, xplay bool) (*ubisoft.MapsTeamRoles, error) {
+func GetMaps(ctx context.Context, client client.Client, auth *auth.UbisoftSession, uuid, platform string, xplay bool) (*[]ubisoft.Map, error) {
 	if xplay && platform != "uplay" {
 		platform = "xplay"
 	}
@@ -341,7 +360,11 @@ func GetMaps(ctx context.Context, client client.Client, auth *auth.UbisoftSessio
 		return nil, nil
 	}
 
-	return &result.GameModes.Ranked.TeamRoles, nil
+	if len(result.GameModes.Ranked.TeamRoles.All) == 0 {
+		return nil, nil
+	}
+
+	return &result.GameModes.Ranked.TeamRoles.All, nil
 }
 
 func GetOperators(ctx context.Context, client client.Client, auth *auth.UbisoftSession, uuid, platform string, xplay bool) (*ubisoft.OperatorTeamRoles, error) {
@@ -472,7 +495,7 @@ func GetTrends(ctx context.Context, client client.Client, auth *auth.UbisoftSess
 	return &ubisoft.TrendOutput{MovingPoints: trendsTwo["movingPoints"].(float64), Trends: trendsOutputArray}, nil
 }
 
-func GetSummary(ctx context.Context, client client.Client, auth *auth.UbisoftSession, uuid, platform string, xplay bool) (*ubisoft.SummaryTeamRoles, error) {
+func GetSummary(ctx context.Context, client client.Client, auth *auth.UbisoftSession, uuid, platform string, xplay bool) (*ubisoft.Summary, error) {
 	if xplay && platform != "uplay" {
 		platform = "xplay"
 	}
@@ -522,5 +545,9 @@ func GetSummary(ctx context.Context, client client.Client, auth *auth.UbisoftSes
 		return nil, nil
 	}
 
-	return &result.GameModes.Ranked.TeamRoles, nil
+	if len(result.GameModes.Ranked.TeamRoles.All) == 0 {
+		return nil, nil
+	}
+
+	return &result.GameModes.Ranked.TeamRoles.All[0], nil
 }
