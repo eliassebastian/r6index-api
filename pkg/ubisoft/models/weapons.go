@@ -33,11 +33,11 @@ type WeaponType struct {
 }
 
 type WeaponTypes struct {
-	WeaponType string    `json:"weaponType"`
-	Weapons    []Weapons `json:"weapons"`
+	WeaponType string   `json:"weaponType"`
+	Weapons    []Weapon `json:"weapons"`
 }
 
-type Weapons struct {
+type Weapon struct {
 	WeaponName          string  `json:"weaponName"`
 	RoundsPlayed        int     `json:"roundsPlayed"`
 	RoundsWon           int     `json:"roundsWon"`
@@ -47,4 +47,6 @@ type Weapons struct {
 	HeadshotAccuracy    float64 `json:"headshotAccuracy"`
 	RoundsWithAKill     float64 `json:"roundsWithAKill"`
 	RoundsWithMultiKill float64 `json:"roundsWithMultiKill"`
+	WeaponType          string  `json:"weaponType"`
+	WeaponCategory      string  `json:"weaponCategory"`
 }
