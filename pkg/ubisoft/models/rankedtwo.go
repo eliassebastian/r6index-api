@@ -16,6 +16,7 @@ type RankedTwoOutputModel struct {
 	MaxRankText     string  `json:"max_rank_text"`
 	KillDeathRatio  float32 `json:"kill_death_ratio"`
 	WinLoseRatio    float32 `json:"win_lose_ratio"`
+	SeasonName      string  `json:"season_name"`
 }
 
 type RankedTwoModel struct {
