@@ -146,4 +146,10 @@ var seasons = map[int16]season{
 		Code: "Y7S4",
 		Date: "2022-12-07",
 	},
+	29: {
+		Name: "Commanding Force",
+		Hex:  "#45abf3",
+		Code: "Y8S1",
+		Date: "2023-03-07",
+	},
 }
