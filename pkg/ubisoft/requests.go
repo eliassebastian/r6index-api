@@ -46,11 +46,15 @@ func GetPlayerProfile(ctx context.Context, client client.Client, auth *auth.Ubis
 		return nil, errors.New("profile not found")
 	}
 
-	if profile.Profiles[0].UserID == "" {
-		return nil, errors.New("ubisoft server error - userid not found")
+	for _, p := range profile.Profiles {
+		if p.PlatformType == platform {
+			if p.UserID != "" {
+				return &p, nil
+			}
+		}
 	}
 
-	return &profile.Profiles[0], nil
+	return nil, errors.New("profile not found")
 }
 
 func GetXpAndLevel(ctx context.Context, client client.Client, auth *auth.UbisoftSession, uuid, platform string) (*ubisoft.XpAndLevel, error) {
