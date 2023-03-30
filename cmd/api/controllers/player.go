@@ -52,12 +52,13 @@ func (pc *PlayerController) RequestHandler(ctx context.Context, c *app.RequestCo
 		return
 	}
 
-	ce := pc.cache.SetOnce(ctx, id, &models.ProfileCache{LastUpdate: player.LastUpdate, Aliases: player.Aliases})
+	ce := pc.cache.Set(ctx, id, &models.ProfileCache{LastUpdate: player.LastUpdate, Aliases: player.Aliases}, 1*time.Hour)
 	if ce != nil {
-		log.Println(ce.Error())
 		c.JSON(consts.StatusBadRequest, responses.Error(startTime, "internal cache error"))
 		return
 	}
+
+	log.Println("Player Fetch", player.ProfileId, player.Nickname, player.LastUpdate)
 
 	c.JSON(consts.StatusOK, responses.Success(startTime, player))
 }

@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"github.com/cloudwego/hertz/pkg/app"
@@ -39,7 +40,7 @@ type updateRequestParams struct {
 }
 
 func (uc *UpdateController) RequestHandler(ctx context.Context, c *app.RequestContext) {
-	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
+	ctxT, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 
 	startTime := time.Now()
@@ -62,7 +63,7 @@ func (uc *UpdateController) RequestHandler(ctx context.Context, c *app.RequestCo
 
 	// Check if the player exists in cache
 	profileCache := new(models.ProfileCache)
-	err = uc.cache.GetCache(ctx, req.Id, profileCache)
+	err = uc.cache.Get(ctx, req.Id, profileCache)
 	if err != nil {
 		c.JSON(consts.StatusBadRequest, responses.Error(startTime, "internal cache error"))
 		return
@@ -70,6 +71,7 @@ func (uc *UpdateController) RequestHandler(ctx context.Context, c *app.RequestCo
 
 	// Check if the player has updated their profile in the last hour
 	if !(startTime.UTC().Sub(time.Unix(profileCache.LastUpdate, 0)) > 1*time.Hour) {
+		log.Println("last update occurred too soon", profileCache.LastUpdate)
 		c.JSON(consts.StatusBadRequest, responses.Error(startTime, "last update occurred too soon"))
 		return
 	}
@@ -81,6 +83,8 @@ func (uc *UpdateController) RequestHandler(ctx context.Context, c *app.RequestCo
 		c.JSON(consts.StatusBadRequest, responses.Error(startTime, "ubisoft response error"))
 		return
 	}
+
+	log.Println("profile being updated", profile.ProfileID, profile.NameOnPlatform)
 
 	output := &models.PlayerUpdate{
 		ProfileId: profile.ProfileID,
@@ -95,7 +99,7 @@ func (uc *UpdateController) RequestHandler(ctx context.Context, c *app.RequestCo
 		output.Nickname = profile.NameOnPlatform
 	}
 
-	group, ctx := errgroup.WithContext(ctx)
+	group, ctx := errgroup.WithContext(ctxT)
 
 	group.Go(func() error {
 		xp, err := ubisoft.GetXpAndLevel(ctx, *uc.client, us, profile.ProfileID, req.Platform)
@@ -205,6 +209,22 @@ func (uc *UpdateController) RequestHandler(ctx context.Context, c *app.RequestCo
 	}
 
 	output.LastUpdate = startTime.UTC().Unix()
+
+	// ce := uc.cache.SetOnce(ctx, req.Id, &models.ProfileCache{LastUpdate: startTime.UTC().Unix(), Aliases: &aliases})
+	// if ce != nil {
+	// 	c.JSON(consts.StatusBadRequest, responses.Error(startTime, "internal error (cache)"))
+	// 	return
+	// }
+
+	e := uc.cache.Set(ctxT, req.Id, &models.ProfileCache{
+		LastUpdate: startTime.UTC().Unix(),
+		Aliases:    &aliases,
+	}, 1*time.Hour)
+
+	if e != nil {
+		c.JSON(consts.StatusBadRequest, responses.Error(startTime, "internal error (cache)"))
+		return
+	}
 
 	_, de := uc.db.DB.Index(req.Platform).UpdateDocuments(output)
 	if de != nil {
