@@ -7,7 +7,7 @@ require (
 	github.com/go-redis/cache/v8 v8.4.4
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/meilisearch/meilisearch-go v0.23.0
-	github.com/rabbitmq/amqp091-go v1.7.0
+	github.com/rabbitmq/amqp091-go v1.8.0
 	golang.org/x/sync v0.1.0
 )
 
