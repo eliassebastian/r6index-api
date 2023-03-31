@@ -3,11 +3,11 @@ module github.com/eliassebastian/r6index-api
 go 1.20
 
 require (
-	github.com/cloudwego/hertz v0.6.0
-	github.com/go-redis/cache/v8 v8.4.4
-	github.com/go-redis/redis/v8 v8.11.5
+	github.com/cloudwego/hertz v0.6.1
 	github.com/meilisearch/meilisearch-go v0.23.0
 	github.com/rabbitmq/amqp091-go v1.8.0
+	github.com/redis/go-redis/v9 v9.0.2
+	github.com/shamaton/msgpackgen v0.3.0
 	golang.org/x/sync v0.1.0
 )
 
@@ -31,16 +31,13 @@ require (
 	github.com/klauspost/cpuid/v2 v2.2.4 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/nyaruka/phonenumbers v1.1.6 // indirect
-	github.com/onsi/gomega v1.24.1 // indirect
+	github.com/shamaton/msgpack/v2 v2.1.0 // indirect
 	github.com/tidwall/gjson v1.14.4 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.44.0 // indirect
-	github.com/vmihailenco/go-tinylfu v0.2.2 // indirect
-	github.com/vmihailenco/msgpack/v5 v5.3.5 // indirect
-	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	golang.org/x/arch v0.3.0 // indirect
 	golang.org/x/sys v0.6.0 // indirect
 	golang.org/x/text v0.8.0 // indirect
