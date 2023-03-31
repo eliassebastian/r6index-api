@@ -32,6 +32,7 @@ type serverConfig struct {
 
 //go:generate go run github.com/shamaton/msgpackgen
 func main() {
+	// Register generated resolver from msgpackgen
 	models.RegisterGeneratedResolver()
 
 	h := server.Default(
@@ -45,6 +46,7 @@ func main() {
 		origin = "https://r6index.app"
 	}
 
+	// Register cors middleware
 	h.Use(middleware.Cors(origin))
 
 	c, err := client.NewClient(
