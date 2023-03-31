@@ -14,6 +14,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/network/standard"
 	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/eliassebastian/r6index-api/cmd/api/middleware"
+	"github.com/eliassebastian/r6index-api/cmd/api/models"
 	"github.com/eliassebastian/r6index-api/pkg/auth"
 	"github.com/eliassebastian/r6index-api/pkg/cache"
 	"github.com/eliassebastian/r6index-api/pkg/meili"
@@ -29,7 +30,10 @@ type serverConfig struct {
 	DB             *meili.MeiliSearchStore
 }
 
+//go:generate go run github.com/shamaton/msgpackgen
 func main() {
+	models.RegisterGeneratedResolver()
+
 	h := server.Default(
 		server.WithHostPorts(utils.GetEnv("API_URL", "127.0.0.1:8080")),
 		server.WithIdleTimeout(30*time.Second),

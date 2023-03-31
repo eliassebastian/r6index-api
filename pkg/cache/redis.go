@@ -4,15 +4,15 @@ import (
 	"context"
 	"time"
 
+	"github.com/eliassebastian/r6index-api/cmd/api/models"
 	"github.com/eliassebastian/r6index-api/pkg/utils"
-	"github.com/go-redis/cache/v8"
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
+	"github.com/shamaton/msgpackgen/msgpack"
 	"golang.org/x/sync/singleflight"
 )
 
 type CacheStore struct {
 	redis *redis.Client
-	cache *cache.Cache
 	group singleflight.Group
 }
 
@@ -28,24 +28,23 @@ func New(ctx context.Context) (*CacheStore, error) {
 		return nil, err
 	}
 
-	cdb := cache.New(&cache.Options{
-		Redis: rdb,
-	})
-
 	return &CacheStore{
 		redis: rdb,
-		cache: cdb,
 	}, nil
 }
 
-func (c *CacheStore) Set(ctx context.Context, key string, value interface{}, ttl time.Duration) error {
+func (c *CacheStore) Set(ctx context.Context, key string, value *models.ProfileCache, ttl time.Duration) error {
 	err, _, _ := c.group.Do(key, func() (interface{}, error) {
-		err := c.cache.Set(&cache.Item{
-			Ctx:   ctx,
-			Key:   key,
-			Value: value,
-			TTL:   ttl,
-		})
+
+		b, err := msgpack.Marshal(value)
+		if err != nil {
+			return err, nil
+		}
+
+		err = c.redis.Set(ctx, key, b, ttl).Err()
+		if err != nil {
+			return err, nil
+		}
 
 		return err, nil
 	})
@@ -58,8 +57,18 @@ func (c *CacheStore) Set(ctx context.Context, key string, value interface{}, ttl
 	return err.(error)
 }
 
-func (c *CacheStore) Get(ctx context.Context, key string, value interface{}) error {
-	return c.cache.Get(ctx, key, value)
+func (c *CacheStore) Get(ctx context.Context, key string, value *models.ProfileCache) error {
+	resp, err := c.redis.Get(ctx, key).Bytes()
+	if err != nil {
+		return err
+	}
+
+	err = msgpack.Unmarshal(resp, value)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (c *CacheStore) Close() {

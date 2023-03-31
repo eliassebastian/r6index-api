@@ -16,6 +16,7 @@ type Alias struct {
 	Date time.Time `json:"date"`
 }
 
+//go:generate go run github.com/shamaton/msgpackgen
 type ProfileCache struct {
 	LastUpdate int64
 	Aliases    *[]Alias
