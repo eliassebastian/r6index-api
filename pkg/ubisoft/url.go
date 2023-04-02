@@ -65,7 +65,7 @@ func operatorUri(uuid, platform string, xplay bool) string {
 func trendsUri(uuid, platform string, xplay bool) string {
 	spaceId := PlatformSpaceId[platform]
 	platform = PlatformModernStats[platform]
-	return fmt.Sprintf("https://prod.datadev.ubisoft.com/v1/users/%s/playerstats?spaceId=%s&view=current&aggregation=movingpoint&trendType=days&gameMode=ranked&platformGroup=%s&teamRole=all&startDate=%s&endDate=%s", uuid, spaceId, platform, utils.GetDate(-1), utils.GetDate(-1))
+	return fmt.Sprintf("https://prod.datadev.ubisoft.com/v1/users/%s/playerstats?spaceId=%s&view=current&aggregation=movingpoint&trendType=days&gameMode=ranked&platformGroup=%s&teamRole=all&startDate=%s&endDate=%s", uuid, spaceId, platform, SEASONSTARTDATE, utils.GetDate(-1))
 }
 
 func summaryUri(uuid, platform string, xplay bool) string {
