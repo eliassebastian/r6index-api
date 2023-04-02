@@ -40,6 +40,9 @@ type updateRequestParams struct {
 }
 
 func (uc *UpdateController) RequestHandler(ctx context.Context, c *app.RequestContext) {
+
+	log.Println("update request received")
+
 	ctxT, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 
@@ -47,16 +50,19 @@ func (uc *UpdateController) RequestHandler(ctx context.Context, c *app.RequestCo
 	var req updateRequestParams
 	err := c.BindAndValidate(&req)
 	if err != nil {
+		log.Println("err 1")
 		c.JSON(consts.StatusBadRequest, responses.Error(time.Now(), err.Error()))
 		return
 	}
 
 	if !utils.IsValidPlatform(req.Platform) {
+		log.Println("err 2")
 		c.JSON(consts.StatusBadRequest, responses.Error(startTime, "invalid platform provided"))
 		return
 	}
 
 	if !utils.IsValidUUID(req.Id) {
+		log.Println("err 3")
 		c.JSON(consts.StatusBadRequest, responses.Error(startTime, "invalid player uuid provided"))
 		return
 	}
@@ -65,6 +71,7 @@ func (uc *UpdateController) RequestHandler(ctx context.Context, c *app.RequestCo
 	profileCache := new(models.ProfileCache)
 	err = uc.cache.Get(ctx, req.Id, profileCache)
 	if err != nil {
+		log.Println("err 4")
 		c.JSON(consts.StatusBadRequest, responses.Error(startTime, "internal cache error"))
 		return
 	}
@@ -210,16 +217,10 @@ func (uc *UpdateController) RequestHandler(ctx context.Context, c *app.RequestCo
 
 	output.LastUpdate = startTime.UTC().Unix()
 
-	// ce := uc.cache.SetOnce(ctx, req.Id, &models.ProfileCache{LastUpdate: startTime.UTC().Unix(), Aliases: &aliases})
-	// if ce != nil {
-	// 	c.JSON(consts.StatusBadRequest, responses.Error(startTime, "internal error (cache)"))
-	// 	return
-	// }
-
 	e := uc.cache.Set(ctxT, req.Id, &models.ProfileCache{
 		LastUpdate: startTime.UTC().Unix(),
 		Aliases:    &aliases,
-	}, 1*time.Hour)
+	}, 24*(1*time.Hour))
 
 	if e != nil {
 		c.JSON(consts.StatusBadRequest, responses.Error(startTime, "internal error (cache)"))
@@ -232,5 +233,8 @@ func (uc *UpdateController) RequestHandler(ctx context.Context, c *app.RequestCo
 		return
 	}
 
-	c.JSON(consts.StatusAccepted, responses.Success(startTime, output))
+	c.JSON(consts.StatusAccepted, responses.Success(startTime, models.PlayerUpdated{
+		Id:         req.Id,
+		LastUpdate: startTime.UTC().Unix(),
+	}))
 }
