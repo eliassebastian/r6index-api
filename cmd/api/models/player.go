@@ -28,6 +28,11 @@ type PlayerFound struct {
 	Id       string `json:"profileId"`
 }
 
+type PlayerUpdated struct {
+	Id         string `json:"profileId"`
+	LastUpdate int64  `json:"lastUpdate"`
+}
+
 type Player struct {
 	//Id         string                          `json:"id"`
 	ProfileId  string           `json:"profileId"`
