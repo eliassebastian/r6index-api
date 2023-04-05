@@ -50,7 +50,7 @@ type Player struct {
 	RankedTwo *ubisoft.RankedTwoOutputModel `json:"ranked"`
 	Weapons   *[]ubisoft.Weapon             `json:"weapons"`
 	Maps      *[]ubisoft.Map                `json:"maps"`
-	Operators *ubisoft.OperatorTeamRoles    `json:"operators"`
+	Operators *[]ubisoft.Operator           `json:"operators"`
 	Trends    *ubisoft.TrendOutput          `json:"trends"`
 }
 
@@ -67,6 +67,6 @@ type PlayerUpdate struct {
 	RankedTwo *ubisoft.RankedTwoOutputModel `json:"ranked,omitempty"`
 	Weapons   *[]ubisoft.Weapon             `json:"weapons,omitempty"`
 	Maps      *[]ubisoft.Map                `json:"maps,omitempty"`
-	Operators *ubisoft.OperatorTeamRoles    `json:"operators,omitempty"`
+	Operators *[]ubisoft.Operator           `json:"operators,omitempty"`
 	Trends    *ubisoft.TrendOutput          `json:"trends,omitempty"`
 }
