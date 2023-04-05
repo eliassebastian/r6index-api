@@ -10,6 +10,7 @@ type Operator struct {
 	StatsDetail string `json:"statsDetail"`
 	//SeasonYear             string         `json:"seasonYear"`
 	//SeasonNumber           string         `json:"seasonNumber"`
+	OperatorSide           string         `json:"operatorSide"`
 	MatchesPlayed          int            `json:"matchesPlayed"`
 	RoundsPlayed           int            `json:"roundsPlayed"`
 	MinutesPlayed          int            `json:"minutesPlayed"`
