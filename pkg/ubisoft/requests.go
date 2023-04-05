@@ -371,7 +371,7 @@ func GetMaps(ctx context.Context, client client.Client, auth *auth.UbisoftSessio
 	return &result.GameModes.Ranked.TeamRoles.All, nil
 }
 
-func GetOperators(ctx context.Context, client client.Client, auth *auth.UbisoftSession, uuid, platform string, xplay bool) (*ubisoft.OperatorTeamRoles, error) {
+func GetOperators(ctx context.Context, client client.Client, auth *auth.UbisoftSession, uuid, platform string, xplay bool) (*[]ubisoft.Operator, error) {
 	if xplay && platform != "uplay" {
 		platform = "xplay"
 	}
@@ -421,7 +421,28 @@ func GetOperators(ctx context.Context, client client.Client, auth *auth.UbisoftS
 		return nil, nil
 	}
 
-	return &result.GameModes.Ranked.TeamRoles, nil
+	//return single slice of operators
+	var output []ubisoft.Operator
+	if len(result.GameModes.Ranked.TeamRoles.Attacker) != 0 {
+		for _, o := range result.GameModes.Ranked.TeamRoles.Attacker {
+			o.OperatorSide = "attacker"
+			output = append(output, o)
+		}
+	}
+
+	if len(result.GameModes.Ranked.TeamRoles.Defender) != 0 {
+		for _, o := range result.GameModes.Ranked.TeamRoles.Defender {
+			o.OperatorSide = "defender"
+			output = append(output, o)
+		}
+	}
+
+	//ubisoft returned no data - handle error by returning nil
+	if len(output) == 0 {
+		return nil, nil
+	}
+
+	return &output, nil
 }
 
 func GetTrends(ctx context.Context, client client.Client, auth *auth.UbisoftSession, uuid, platform string, xplay bool) (*ubisoft.TrendOutput, error) {
